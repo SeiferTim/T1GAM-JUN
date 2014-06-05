@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<data>
+
+	<button center_x="true" center_y="true" label="Play!">
+		<param type="string" value="button_play"/>
+	</button>
+		
+	
+</data>
