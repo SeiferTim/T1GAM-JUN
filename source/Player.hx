@@ -21,12 +21,10 @@ class Player
 }
 
 enum Characters {
-	BLACK;
 	RED;
 	YELLOW;
 	GREEN;
-	CYAN;
+	//CYAN;
 	BLUE;
-	MAGENTA;
-	WHITE;
+	//MAGENTA;
 }
