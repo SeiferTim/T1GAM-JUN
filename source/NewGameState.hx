@@ -39,8 +39,15 @@ class NewGameState extends FlxUIState
 			{
 				if (GameControls.anyKeyJustReleased(i, GameControls.BACK))
 				{
-					_players[i] = false;
-					_charWheels[i].deactivate();
+					if (_charWheels[i].locked)
+					{
+						_charWheels[i].unlock();
+					}
+					else
+					{
+						_players[i] = false;
+						_charWheels[i].deactivate();
+					}
 				}
 				else if (GameControls.anyKeyJustReleased(i, GameControls.SELRIGHT))
 				{
@@ -49,6 +56,10 @@ class NewGameState extends FlxUIState
 				else if (GameControls.anyKeyJustReleased(i, GameControls.SELLEFT))
 				{
 					_charWheels[i].prevChar();
+				}
+				else if (GameControls.anyKeyJustReleased(i, GameControls.SELECT))
+				{
+					_charWheels[i].lock();
 				}
 			}
 			else
@@ -60,6 +71,10 @@ class NewGameState extends FlxUIState
 				}
 			}
 			
+			if ((!_players[0] || _charWheels[0].locked) && (!_players[1] || _charWheels[1].locked) && (!_players[2] || _charWheels[2].locked) && (!_players[3] || _charWheels[3].locked) )
+			{
+				
+			}
 		}
 
 		super.update();

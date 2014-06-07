@@ -22,7 +22,7 @@ class CharSelectWheel extends FlxTypedSpriteGroup<FlxSprite>
 	private var _slideY:Float = 0;
 	private var _activated:Bool = false;
 	private var _txtReady:FlxText;
-	private var locked:Bool = false;
+	public var locked:Bool = false;
 	
 	
 	public function new(X:Int, Y:Int) 
@@ -37,13 +37,15 @@ class CharSelectWheel extends FlxTypedSpriteGroup<FlxSprite>
 		add(_sprDisplay);
 		
 		_txtPressKey = new FlxText(0, 0, 80, "Join", 22);
+		_txtPressKey.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1, 1);
 		_txtPressKey.alignment = "center";
 		_txtPressKey.x = 40 - (_txtPressKey.width / 2);
 		_txtPressKey.y = 100 - (_txtPressKey.height / 2);
 		_txtPressKey.angle = -4;
 		add(_txtPressKey);
 		
-		_txtReady = new FlxText(0, 0, 80, "Ready!", 22);
+		_txtReady = new FlxText(0, 0, 80, "Ready!", 18);
+		_txtReady.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1, 1);
 		_txtReady.alignment = "center";
 		_txtReady.x = 40 - (_txtReady.width / 2);
 		_txtReady.y = 100 - (_txtReady.height / 2);
@@ -55,11 +57,28 @@ class CharSelectWheel extends FlxTypedSpriteGroup<FlxSprite>
 		_activated = false;
 	}
 	
+	public function unlock():Void
+	{
+		locked = false;
+		FlxTween.num(1, 0, .6, {ease: FlxEase.circOut}, updateReadyFade);
+		
+	}
+	
 	public function lock():Void
 	{
+		if (locked || !_activated)
+			return;
+		_txtReady.visible = true;
+		_txtReady.active = true;
 		locked = true;
-		FlxTween.num(0, 1, .6, { }, updateReadyFade);
+		FlxTween.num(0, 1, .6, {ease: FlxEase.circOut}, updateReadyFade);
 		
+	}
+	
+	private function updateReadyFade(Value:Float):Void
+	{
+		_txtReady.alpha = Value;
+		_txtReady.scale.set(2 - Value, 2 - Value);
 	}
 	
 	public function activate():Void
