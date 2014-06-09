@@ -131,6 +131,9 @@ class GameControls
 	
 	public static function checkInputs(PlayerNo:Int):Void
 	{
+		if (!canInteract)
+			return;
+		
 		for (i in 0...12)
 		{
 			inputs[PlayerNo][PRESSED][i] = anyKeyPressed(PlayerNo, i);
@@ -158,5 +161,10 @@ class GameControls
 	public static function getInput(PlayerNo:Int, Input:Int, Key:Int):Bool
 	{
 		return inputs[PlayerNo][Input][Key];
+	}
+	
+	public static function newState():Void
+	{
+		canInteract = false;
 	}
 }

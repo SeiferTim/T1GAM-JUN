@@ -45,7 +45,14 @@ class NewGameState extends FlxUIState
 		_txtTimer.alpha = 0;
 		add(_txtTimer);
 		
+		FlxG.camera.fade(FlxColor.BLACK, .3, true, doneFadeIn);
+		
 		super.create();
+	}
+	
+	private function doneFadeIn():Void
+	{
+		GameControls.canInteract = true;
 	}
 	
 	override public function update():Void 
