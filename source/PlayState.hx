@@ -95,8 +95,11 @@ class PlayState extends FlxState
 	override public function update():Void
 	{
 		
-		FlxG.collide(_grpPlayers, _room.walls);
 		
 		super.update();
+		
+		FlxG.collide(_room.walls, _grpPlayers);
+		
+		
 	}	
 }
