@@ -12,6 +12,24 @@ import flixel.math.FlxMath;
  */
 class PlayState extends FlxState
 {
+	
+	private var _players:Array<Bool>;
+	
+	public function new(Players:Array<Int>):Void
+	{
+		super();
+		
+		_players = [false, false, false, false];
+		for (i in 0...4)
+		{
+			if (Players[i] != -1)
+			{
+				Reg.players[i] = new Player(i, Players[i]);
+				_players[i] = true;
+			}
+		}
+	}
+	
 	/**
 	 * Function that is called up when to state is created to set it up. 
 	 */

@@ -4,7 +4,14 @@ import flixel.FlxG;
 class GameControls
 {
 
+	public static inline var INPUT_DELAY:Float = .1;
+	
 	private static var initialized:Bool = false;
+	
+	public static inline var PRESSED:Int = 0;
+	public static inline var JUSTPRESSED:Int = 1;
+	public static inline var JUSTRELEASED:Int = 2;
+	
 	
 	public static inline var LEFT:Int = 0;
 	public static inline var RIGHT:Int = 1;
@@ -34,6 +41,8 @@ class GameControls
 	private static var _defaultKeys:Array<Array<Array<String>>>;
 	#end
 	
+	public static var inputs:Array<Array<Array<Bool>>>;
+	
 	public static function init():Void
 	{
 		if (initialized) 
@@ -59,15 +68,6 @@ class GameControls
 		keys[0][ANY] = keys[0][LEFT].concat(keys[0][UP]).concat(keys[0][RIGHT]).concat(keys[0][DOWN]).concat(keys[0][JUMP]).concat(keys[0][FIRE]).concat(keys[0][PAUSE]);
 		
 		keys[1] = [];
-		/*keys[1][LEFT] = ["A"];
-		keys[1][RIGHT] = ["D"];
-		keys[1][UP] = ["W"];
-		keys[1][DOWN] = ["S"];
-		keys[1][JUMP] = ["G"];
-		keys[1][FIRE] = ["H"];
-		keys[1][PAUSE] = ["E"];
-		keys[1][BACK] = ["Q"];
-		*/
 		keys[1][LEFT] = [];
 		keys[1][RIGHT] = [];
 		keys[1][UP] = [];
@@ -76,22 +76,12 @@ class GameControls
 		keys[1][FIRE] = [];
 		keys[1][PAUSE] = [];
 		keys[1][BACK] = [];
-		
 		keys[1][SELLEFT] = keys[1][LEFT].concat(keys[1][UP]);
 		keys[1][SELRIGHT] = keys[1][RIGHT].concat(keys[1][DOWN]);
-		keys[0][SELECT] = keys[1][JUMP].concat(keys[1][FIRE]).concat(keys[1][PAUSE]);
+		keys[1][SELECT] = keys[1][JUMP].concat(keys[1][FIRE]).concat(keys[1][PAUSE]);
 		keys[1][ANY] = keys[1][LEFT].concat(keys[1][UP]).concat(keys[1][RIGHT]).concat(keys[1][DOWN]).concat(keys[1][JUMP]).concat(keys[1][FIRE]).concat(keys[1][PAUSE]);
 		
 		keys[2] = [];
-		/*keys[2][LEFT] = ["NUMPADFOUR"];
-		keys[2][RIGHT] = ["NUMPADSIX"];
-		keys[2][UP] = ["NUMPADEIGHT"];
-		keys[2][DOWN] = ["NUMPADTWO"];
-		keys[2][JUMP] = ["NUMPADZERO"];
-		keys[2][FIRE] = ["NUMPADPERIOD"];
-		keys[2][PAUSE] = ["NUMPADPLUS"];
-		keys[2][BACK] = ["NUMPADMINUS"];
-		*/
 		keys[2][LEFT] = [];
 		keys[2][RIGHT] = [];
 		keys[2][UP] = [];
@@ -102,7 +92,7 @@ class GameControls
 		keys[2][BACK] = [];
 		keys[2][SELLEFT] = keys[2][LEFT].concat(keys[2][UP]);
 		keys[2][SELRIGHT] = keys[2][RIGHT].concat(keys[2][DOWN]);
-		keys[0][SELECT] = keys[2][JUMP].concat(keys[2][FIRE]).concat(keys[2][PAUSE]);
+		keys[2][SELECT] = keys[2][JUMP].concat(keys[2][FIRE]).concat(keys[2][PAUSE]);
 		keys[2][ANY] = keys[2][LEFT].concat(keys[2][UP]).concat(keys[2][RIGHT]).concat(keys[2][DOWN]).concat(keys[2][JUMP]).concat(keys[2][FIRE]).concat(keys[2][PAUSE]);
 		
 		keys[3] = [];
@@ -116,16 +106,39 @@ class GameControls
 		keys[3][BACK] = [];
 		keys[3][SELLEFT] = keys[3][LEFT].concat(keys[3][UP]);
 		keys[3][SELRIGHT] = keys[3][RIGHT].concat(keys[3][DOWN]);
-		keys[0][SELECT] = keys[3][JUMP].concat(keys[3][FIRE]).concat(keys[3][PAUSE]);
+		keys[3][SELECT] = keys[3][JUMP].concat(keys[3][FIRE]).concat(keys[3][PAUSE]);
 		keys[3][ANY] = keys[3][LEFT].concat(keys[3][UP]).concat(keys[3][RIGHT]).concat(keys[3][DOWN]).concat(keys[3][JUMP]).concat(keys[3][FIRE]).concat(keys[3][PAUSE]);
 		
 		_defaultKeys = keys.copy();
 		#end
 		
-		
+		inputs = [];
+		for (i in 0...4)
+		{
+			inputs[i] = [];
+			for (j in 0...3)
+			{
+				inputs[i][j] = [];
+				for (k in 0...12)
+				{
+					inputs[i][j][k] = false;
+				}
+			}
+		}
 		
 		initialized = true;
 	}
+	
+	public static function checkInputs(PlayerNo:Int):Void
+	{
+		for (i in 0...12)
+		{
+			inputs[PlayerNo][PRESSED][i] = anyKeyPressed(PlayerNo, i);
+			inputs[PlayerNo][JUSTPRESSED][i] = anyKeyJustPressed(PlayerNo, i);
+			inputs[PlayerNo][JUSTRELEASED][i] = anyKeyJustReleased(PlayerNo, i);
+		}
+	}
+	
 	
 	public static function anyKeyJustReleased(PlayerNo:Int, Keys:Int):Bool
 	{
@@ -142,5 +155,8 @@ class GameControls
 		return FlxG.keys.anyPressed(keys[PlayerNo][Keys]);
 	}
 	
-	
+	public static function getInput(PlayerNo:Int, Input:Int, Key:Int):Bool
+	{
+		return inputs[PlayerNo][Input][Key];
+	}
 }
