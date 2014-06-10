@@ -10,6 +10,7 @@ import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
+import flixel.util.FlxSignal;
 using flixel.util.FlxArrayUtil;
 using flixel.math.FlxRandom;
 
@@ -23,7 +24,8 @@ class PlayState extends FlxState
 	private var _playerSprites:Array<PlayerSprite>;
 	private var _room:Room;
 	private var _grpPlayers:FlxTypedGroup<PlayerSprite>;
-	
+	private var _grpPlayerBullets:FlxTypedGroup<Bullet>;
+		
 	public function new(Players:Array<Int>):Void
 	{
 		super();
@@ -52,6 +54,9 @@ class PlayState extends FlxState
 		_room = new Room(Reg.level);
 		add(_room.bg);
 		add(_room.walls);
+		_grpPlayerBullets = new FlxTypedGroup<Bullet>();
+		
+		add(_grpPlayerBullets);
 		
 		_playerSprites = [];
 		
@@ -68,11 +73,24 @@ class PlayState extends FlxState
 				_playerSprites[i] = new PlayerSprite(_spawns[i].x -10, _spawns[i].y -10, i, Reg.players[i].character);
 				_grpPlayers.add(_playerSprites[i]);
 			}
-		}
+		}		
+		
+		Reg.currentPlayState = this;
 		
 		FlxG.camera.fade(FlxColor.BLACK, .3, true, doneFadeIn);
 		
 		super.create();
+	}
+	
+	public function fireBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float):Bullet
+	{
+		var b:Bullet = _grpPlayerBullets.recycle();
+		if (b == null)
+			b = new Bullet();
+		b.fire(X, Y, VelocityX, VelocityY);
+		_grpPlayerBullets.add(b);
+		return b;
+		
 	}
 	
 	private function doneFadeIn():Void
@@ -93,13 +111,10 @@ class PlayState extends FlxState
 	 * Function that is called once every frame.
 	 */
 	override public function update():Void
-	{
-		
-		
+	{	
 		super.update();
 		
 		FlxG.collide(_room.walls, _grpPlayers);
-		
-		
+		//FlxG.collide(_room.walls, _grpPlayerBullets);
 	}	
 }

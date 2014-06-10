@@ -1,29 +1,32 @@
 package ;
 
 import flixel.FlxG;
+import flixel.FlxGame;
 import flixel.FlxObject;
 import flixel.FlxSprite;
+import flixel.util.FlxSignal;
 import flixel.util.FlxTimer;
 
 class PlayerSprite extends FlxSprite
 {
 
-	private static var MAX_SPEED:Int = 60;
-	private static var ACCELERATION:Int = 120;
-	private static var DRAG:Int = 640;
-	private static var JUMP_SPEED:Int = -150;
-	private static var GRAVITY:Int = 1200;
-	private static var JUMP_TIME:Float = 0.22;
-	private static var GRAVITY_LAG:Float = .12;
+	// constant movement values
+	// these are 'based on' pixels per frame * framerate.
+	private static var ACCELERATION:Float =  1.76 	* 60;
+	private static var GRAVITY:Float = 		  .64 	* 60;
+	private static var MAX_GRAV:Float = 	 7.00	* 60;
+	private static var JUMP_POWER:Float = 	-4.192 	* 60;
+	private static var JUMP_MIN:Float = 	-2.31 	* 60;
 	
-	public var timerStarted = false;
 	public var playerNumber:Int;
 	public var character:Int;
 	
-	private var _jumpTimer:FlxTimer;
-	public var _gravityLag:Float;
-	public var _canJump:Bool;
-	public var _hasJumped:Bool;
+	private var _jumpTimer:Float = 0;
+	private var _landTimer:Float = 0;
+	private var _ledgeBuffer:Float = 0;
+	
+	private var _shootTimer:Float = 0;
+	private var _bullets:Array<Bullet>;
 	
 	public function new(X:Float=0, Y:Float=0, PlayerNumber:Int, Character:Int) 
 	{
@@ -32,22 +35,13 @@ class PlayerSprite extends FlxSprite
 		character = Character;
 		loadGraphic("assets/images/player-" + character + ".png", false, 20, 20);
 		setFacingFlip(FlxObject.LEFT, false,false);
-		setFacingFlip(FlxObject.RIGHT, true, false);
-		maxVelocity.x = MAX_SPEED;
-		maxVelocity.y = MAX_SPEED * 20;
-		drag.x = DRAG;
-		acceleration.y = GRAVITY;
+		setFacingFlip(FlxObject.RIGHT, true, false);		
 		width = 6;
 		height = 16;
 		offset.x = 9;
 		offset.y = 4;
-		
-		FlxG.watch.add(this, "_canJump");
-		FlxG.watch.add(this, "_gravityLag");
-		FlxG.watch.add(this, "timerStarted");
-		
-		_jumpTimer = new FlxTimer();
-
+		_bullets = [];
+		FlxG.watch.add(_bullets, "length");
 	}
 	
 	override public function update():Void 
@@ -66,6 +60,7 @@ class PlayerSprite extends FlxSprite
 		var _left:Bool = false;
 		var _right:Bool = false;
 		var _jump:Bool = false;
+		var _fire:Bool = false;
 		var onTheGround:Bool = isTouching(FlxObject.FLOOR) && !justTouched(FlxObject.FLOOR);
 		
 		GameControls.checkInputs(playerNumber);
@@ -75,12 +70,14 @@ class PlayerSprite extends FlxSprite
 		_left = GameControls.getInput(playerNumber, GameControls.PRESSED, GameControls.LEFT);
 		_right = GameControls.getInput(playerNumber, GameControls.PRESSED, GameControls.RIGHT);
 		_jump = GameControls.getInput(playerNumber, GameControls.PRESSED, GameControls.JUMP);
+		_fire = GameControls.getInput(playerNumber, GameControls.PRESSED, GameControls.FIRE);
 		
 		if (_up && _down)
 			_up = _down = false;
 		if (_left && _right)
 			_left = _right = false;
-			
+		
+		// HORIZONTAL MOVEMENT
 		if (_left)
 		{
 			offset.x = 9;
@@ -93,47 +90,75 @@ class PlayerSprite extends FlxSprite
 			facing = FlxObject.RIGHT;
 			velocity.x = ACCELERATION;
 		}
+		else if (!_left && !_right)
+		{
+			velocity.x = 0;
+		}
 		
+		// JUMPING
 		if (onTheGround)
 		{
-			_canJump = true;
-			_hasJumped = false;
-			if (timerStarted)
+			if (_landTimer < 0)
 			{
-				timerStarted = false;
-				_jumpTimer.cancel();
+				_jumpTimer = 0;
 			}
+			else
+				_landTimer -= FlxG.elapsed * 20;
+			_ledgeBuffer = 1;
+		}
+		else
+		{
+			if (_ledgeBuffer < 0)
+			{
+				_landTimer = 1;
+			}
+			else
+				_ledgeBuffer -= FlxG.elapsed * 10;
+		}
+		
+		velocity.y += GRAVITY;
+		if (velocity.y > MAX_GRAV)
+			velocity.y = MAX_GRAV;
 			
-			_gravityLag = GRAVITY_LAG;
-		}		
-		else if (_gravityLag > 0 && !_hasJumped)
+		if (_jump && _jumpTimer < 1)
 		{
-			_gravityLag -= FlxG.elapsed;
-			_canJump = true;
-		}		
-		
-		if (_canJump && _jump)
+			_jumpTimer += FlxG.elapsed * 10;
+			velocity.y = JUMP_POWER;
+		}
+		if (!_jump && velocity.y < JUMP_MIN)
 		{
-			_hasJumped = true;
-			if (!timerStarted)
+			velocity.y = 0;
+		}
+		else
+			velocity.y < JUMP_MIN;
+	
+		// SHOOTING
+		if (_shootTimer > 0)
+			_shootTimer -= FlxG.elapsed * 10;
+			
+		for (i in 0..._bullets.length)
+		{
+			if (_bullets[i] != null)
 			{
-				_jumpTimer.start(JUMP_TIME, onJumpEnd, 1);
-				timerStarted = true;
+				if (!(_bullets[i].alive))
+				{
+					_bullets = _bullets.splice(i, 1);
+				}
 			}
-			velocity.y = JUMP_SPEED;
+		}
+
+		
+		if (_fire)
+		{
+			if (_shootTimer <= 0 && _bullets.length < 3)
+			{
+				_shootTimer = 1;
+				_bullets.push(Reg.currentPlayState.fireBullet(x + (facing == FlxObject.LEFT ? -6 : width), y + (height / 2), 500 * (facing == FlxObject.LEFT ? -1 : 1), 0));
+			}
 		}
 		
-		if (!_jump)
-		{
-			_canJump = false;
-		}
 		
 	}
 	
-	private function onJumpEnd(timer:FlxTimer) 
-	{
-		_canJump = false;
-		timerStarted = false;
-	}
 	
 }

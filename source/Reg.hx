@@ -24,4 +24,6 @@ class Reg
 	
 	public static var players:Array<Player> = [];
 	
+	public static var currentPlayState:PlayState;
+	
 }
