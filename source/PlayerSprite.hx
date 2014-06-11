@@ -12,21 +12,24 @@ class PlayerSprite extends FlxSprite
 
 	// constant movement values
 	// these are 'based on' pixels per frame * framerate.
-	private static var ACCELERATION:Float =  1.76 	* 60;
-	private static var GRAVITY:Float = 		  .64 	* 60;
-	private static var MAX_GRAV:Float = 	 7.00	* 60;
-	private static var JUMP_POWER:Float = 	-4.192 	* 60;
-	private static var JUMP_MIN:Float = 	-2.31 	* 60;
-	
+	private static var MAX_X_SPEED:Float =   1.76 	* Reg.FRAMERATE;
+	private static var GRAVITY:Float = 		  .64 	* Reg.FRAMERATE;
+	private static var MAX_GRAV:Float = 	 7.00	* Reg.FRAMERATE;
+	private static var JUMP_POWER:Float = 	-4.192 	* Reg.FRAMERATE;
+	private static var JUMP_MIN:Float = 	-2.31 	* Reg.FRAMERATE;
+	private static var ACCELERATION:Float =   .4 	* Reg.FRAMERATE;
+	private static var DECELERATION:Float =   .8 	* Reg.FRAMERATE;
+	private static var BULLET_SPEED:Float =  5.00	* Reg.FRAMERATE;
+		
 	public var playerNumber:Int;
 	public var character:Int;
 	
 	private var _jumpTimer:Float = 0;
 	private var _landTimer:Float = 0;
 	private var _ledgeBuffer:Float = 0;
-	
 	private var _shootTimer:Float = 0;
-	private var _bullets:Array<Bullet>;
+	private var _doubleJumpReady:Bool = false;
+	private var _didDoubleJump:Bool = false;
 	
 	public function new(X:Float=0, Y:Float=0, PlayerNumber:Int, Character:Int) 
 	{
@@ -40,15 +43,18 @@ class PlayerSprite extends FlxSprite
 		height = 16;
 		offset.x = 9;
 		offset.y = 4;
-		_bullets = [];
-		FlxG.watch.add(_bullets, "length");
+		maxVelocity.x = MAX_X_SPEED;
+		
+		FlxG.watch.add(this, "_jumpTimer");
+		FlxG.watch.add(this, "_doubleJumpReady");
+		FlxG.watch.add(this, "_didDoubleJump");
+		FlxG.watch.add(this, "_shootTimer");
 	}
 	
 	override public function update():Void 
 	{
 		
 		movement();
-		
 		
 		super.update();
 	}
@@ -61,6 +67,9 @@ class PlayerSprite extends FlxSprite
 		var _right:Bool = false;
 		var _jump:Bool = false;
 		var _fire:Bool = false;
+		var _fireReleased:Bool = false;
+		var _fireJustPressed:Bool = false;
+			
 		var onTheGround:Bool = isTouching(FlxObject.FLOOR) && !justTouched(FlxObject.FLOOR);
 		
 		GameControls.checkInputs(playerNumber);
@@ -70,29 +79,60 @@ class PlayerSprite extends FlxSprite
 		_left = GameControls.getInput(playerNumber, GameControls.PRESSED, GameControls.LEFT);
 		_right = GameControls.getInput(playerNumber, GameControls.PRESSED, GameControls.RIGHT);
 		_jump = GameControls.getInput(playerNumber, GameControls.PRESSED, GameControls.JUMP);
+		
 		_fire = GameControls.getInput(playerNumber, GameControls.PRESSED, GameControls.FIRE);
+		_fireReleased = GameControls.getInput(playerNumber, GameControls.JUSTRELEASED, GameControls.FIRE);
+		_fireJustPressed = GameControls.getInput(playerNumber, GameControls.JUSTPRESSED, GameControls.FIRE);
+		
 		
 		if (_up && _down)
 			_up = _down = false;
 		if (_left && _right)
 			_left = _right = false;
 		
+		if (_fire)
+			maxVelocity.x = MAX_X_SPEED * .6;
+		else
+			maxVelocity.x = MAX_X_SPEED;
+	
 		// HORIZONTAL MOVEMENT
 		if (_left)
 		{
-			offset.x = 9;
-			facing = FlxObject.LEFT;
-			velocity.x = -ACCELERATION;
+			if (!_fire)
+			{
+				offset.x = 9;
+				facing = FlxObject.LEFT;
+			}
+			velocity.x -= ACCELERATION;
+			
 		}
 		else if (_right)
 		{
-			offset.x = 5;
-			facing = FlxObject.RIGHT;
-			velocity.x = ACCELERATION;
+			if (!_fire)
+			{
+				offset.x = 5;
+				facing = FlxObject.RIGHT;
+			}
+			velocity.x += ACCELERATION;
 		}
 		else if (!_left && !_right)
 		{
-			velocity.x = 0;
+			if (velocity.x < 0)
+			{
+				if (velocity.x > -ACCELERATION)
+					velocity.x = 0;
+				else
+					velocity.x += ACCELERATION;
+			}
+			else if (velocity.x > 0)
+			{
+				if (velocity.x < ACCELERATION)
+					velocity.x = 0;
+				else
+					velocity.x -= ACCELERATION;
+			}
+			else
+				velocity.x = 0;
 		}
 		
 		// JUMPING
@@ -105,6 +145,8 @@ class PlayerSprite extends FlxSprite
 			else
 				_landTimer -= FlxG.elapsed * 20;
 			_ledgeBuffer = 1;
+			_didDoubleJump = false;
+			_doubleJumpReady = false;
 		}
 		else
 		{
@@ -119,43 +161,54 @@ class PlayerSprite extends FlxSprite
 		velocity.y += GRAVITY;
 		if (velocity.y > MAX_GRAV)
 			velocity.y = MAX_GRAV;
-			
-		if (_jump && _jumpTimer < 1)
+		
+		
+		if (!_jump && !_didDoubleJump && _jumpTimer > FlxG.elapsed * 6)
 		{
-			_jumpTimer += FlxG.elapsed * 10;
-			velocity.y = JUMP_POWER;
+			_doubleJumpReady = true;
 		}
-		if (!_jump && velocity.y < JUMP_MIN)
+			
+		if (_jump && (_jumpTimer < 1 || _doubleJumpReady))
+		{
+			_jumpTimer += FlxG.elapsed * 7;
+			if (_doubleJumpReady && !_didDoubleJump)
+			{
+				_didDoubleJump = true;
+				_doubleJumpReady = false;
+				_jumpTimer = 0;
+				velocity.y = JUMP_POWER * .6;
+			}
+			else
+				velocity.y = JUMP_POWER;
+			
+			
+		}
+		else if (!_jump)
+		{
+			_jumpTimer = 1;
+		}
+		
+		if ((!_jump && velocity.y < JUMP_MIN))
 		{
 			velocity.y = 0;
 		}
-		else
-			velocity.y < JUMP_MIN;
 	
 		// SHOOTING
-		if (_shootTimer > 0)
-			_shootTimer -= FlxG.elapsed * 10;
-			
-		for (i in 0..._bullets.length)
-		{
-			if (_bullets[i] != null)
-			{
-				if (!(_bullets[i].alive))
-				{
-					_bullets = _bullets.splice(i, 1);
-				}
-			}
-		}
-
 		
-		if (_fire)
+		if (_fireReleased)
 		{
-			if (_shootTimer <= 0 && _bullets.length < 3)
-			{
-				_shootTimer = 1;
-				_bullets.push(Reg.currentPlayState.fireBullet(x + (facing == FlxObject.LEFT ? -6 : width), y + (height / 2), 500 * (facing == FlxObject.LEFT ? -1 : 1), 0));
-			}
+			_shootTimer = 0;
 		}
+		
+		if (_shootTimer > 0)
+			_shootTimer -= FlxG.elapsed * 8;
+			
+		if ((_fire && _shootTimer <= 0) || _fireJustPressed)
+		{
+			if (Reg.currentPlayState.fireBullet(x + (facing == FlxObject.LEFT ? -6 : width), y + (height / 2), BULLET_SPEED * (facing == FlxObject.LEFT ? -1 : 1), 0, playerNumber))
+				_shootTimer = 1;
+		}
+		
 		
 		
 	}

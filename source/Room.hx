@@ -1,5 +1,6 @@
 package ;
 import flixel.addons.editors.ogmo.FlxOgmoLoader;
+import flixel.FlxObject;
 import flixel.math.FlxPoint;
 import flixel.tile.FlxTilemap;
 
@@ -11,12 +12,13 @@ class Room
 	public var walls:FlxTilemap;
 	public var spawns:Array<FlxPoint>;
 	
-	public function new(RoomNo:Int) 
+	public function new(RoomNo:Int)
 	{
 		_map = new FlxOgmoLoader("data/level-" + RoomNo + ".oel");
 		
 		bg = _map.loadTilemap(AssetPaths.tiles__png, 10, 10, "Background");
 		walls = _map.loadTilemap(AssetPaths.tiles__png, 10, 10, "Walls");
+		walls.setTileProperties(2, FlxObject.CEILING);
 		
 		spawns = [];
 		_map.loadEntities(loadSpawn, "PlayerSpawns");

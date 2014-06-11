@@ -10,6 +10,8 @@ import flixel.util.FlxSave;
 class Reg
 {
 	
+	public static var FRAMERATE:Int = 60;
+	
 	/**
 	 * Generic level variable that can be used for cross-state stuff.
 	 * Example usage: Storing the current level number.

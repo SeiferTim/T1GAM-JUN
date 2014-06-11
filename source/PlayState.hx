@@ -24,7 +24,8 @@ class PlayState extends FlxState
 	private var _playerSprites:Array<PlayerSprite>;
 	private var _room:Room;
 	private var _grpPlayers:FlxTypedGroup<PlayerSprite>;
-	private var _grpPlayerBullets:FlxTypedGroup<Bullet>;
+	private var _grpPlayerBullets:Array<FlxTypedGroup<Bullet>>;
+	private var _boss:Boss;
 		
 	public function new(Players:Array<Int>):Void
 	{
@@ -54,14 +55,16 @@ class PlayState extends FlxState
 		_room = new Room(Reg.level);
 		add(_room.bg);
 		add(_room.walls);
-		_grpPlayerBullets = new FlxTypedGroup<Bullet>();
-		
-		add(_grpPlayerBullets);
+		_grpPlayerBullets = [];
 		
 		_playerSprites = [];
 		
 		_grpPlayers = new FlxTypedGroup<PlayerSprite>(4);
-		add(_grpPlayers);
+		
+		_boss = new Boss();
+		_boss.setPosition(170, 110);
+		add(_boss);
+		
 		
 		var _spawns:Array<FlxPoint> = _room.spawns.copy();
 		_spawns.shuffleArray(10);
@@ -70,10 +73,15 @@ class PlayState extends FlxState
 		{
 			if (_players[i])
 			{
-				_playerSprites[i] = new PlayerSprite(_spawns[i].x -10, _spawns[i].y -10, i, Reg.players[i].character);
+				_playerSprites[i] = new PlayerSprite(_spawns[i].x - 10, _spawns[i].y -10, i, Reg.players[i].character);
 				_grpPlayers.add(_playerSprites[i]);
+				_grpPlayerBullets[i] = new FlxTypedGroup<Bullet>(6);
+				add(_grpPlayerBullets[i]);
 			}
 		}		
+		
+		
+		add(_grpPlayers);
 		
 		Reg.currentPlayState = this;
 		
@@ -82,14 +90,18 @@ class PlayState extends FlxState
 		super.create();
 	}
 	
-	public function fireBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float):Bullet
+	public function fireBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, PlayerNo:Int):Bool
 	{
-		var b:Bullet = _grpPlayerBullets.recycle();
-		if (b == null)
-			b = new Bullet();
-		b.fire(X, Y, VelocityX, VelocityY);
-		_grpPlayerBullets.add(b);
-		return b;
+		if (_grpPlayerBullets[PlayerNo].countLiving() < 6)
+		{
+			var b:Bullet = _grpPlayerBullets[PlayerNo].recycle();
+			if (b == null)
+				b = new Bullet();
+			b.fire(X, Y, VelocityX, VelocityY);
+			_grpPlayerBullets[PlayerNo].add(b);
+			return true;
+		}
+		return false;
 		
 	}
 	
