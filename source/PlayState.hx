@@ -1,12 +1,14 @@
 package;
 
 import flixel.FlxG;
+import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxGroup;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRandom;
 import flixel.text.FlxText;
+import flixel.ui.FlxBar;
 import flixel.ui.FlxButton;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
@@ -26,6 +28,9 @@ class PlayState extends FlxState
 	private var _grpPlayers:FlxTypedGroup<PlayerSprite>;
 	private var _grpPlayerBullets:Array<FlxTypedGroup<Bullet>>;
 	private var _boss:Boss;
+	private var _playerSpawns:Array<FlxPoint>;
+	private var _barBossHealth:FlxBar;
+	private var _grpEnemyBullets:FlxTypedGroup<Bullet>;
 		
 	public function new(Players:Array<Int>):Void
 	{
@@ -65,15 +70,18 @@ class PlayState extends FlxState
 		_boss.setPosition(170, 110);
 		add(_boss);
 		
-		
-		var _spawns:Array<FlxPoint> = _room.spawns.copy();
-		_spawns.shuffleArray(10);
+		_playerSpawns = _room.spawns.copy();
+		_playerSpawns.shuffleArray(10);
 		
 		for (i in 0...4)
 		{
 			if (_players[i])
 			{
-				_playerSprites[i] = new PlayerSprite(_spawns[i].x - 10, _spawns[i].y -10, i, Reg.players[i].character);
+				_playerSprites[i] = new PlayerSprite(_playerSpawns[i].x - 10, _playerSpawns[i].y -10, i, Reg.players[i].character);
+				if (_playerSprites[i].x < FlxG.width / 2)
+					_playerSprites[i].facing = FlxObject.RIGHT;
+				else
+					_playerSprites[i].facing = FlxObject.LEFT;
 				_grpPlayers.add(_playerSprites[i]);
 				_grpPlayerBullets[i] = new FlxTypedGroup<Bullet>(6);
 				add(_grpPlayerBullets[i]);
@@ -82,6 +90,12 @@ class PlayState extends FlxState
 		
 		
 		add(_grpPlayers);
+		
+		_grpEnemyBullets = new FlxTypedGroup<Bullet>();
+		add(_grpEnemyBullets);
+		
+		_barBossHealth = new FlxBar(10, 5, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width - 20, 10, _boss, "health", 0, 100, true);
+		add(_barBossHealth);
 		
 		Reg.currentPlayState = this;
 		
@@ -103,6 +117,15 @@ class PlayState extends FlxState
 		}
 		return false;
 		
+	}
+	
+	public function fireEnemyBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float):Void
+	{
+		var b:Bullet = _grpEnemyBullets.recycle();
+		if (b == null)
+			b = new Bullet();
+		b.fire(X, Y, VelocityX, VelocityY, Bullet.ENEMY_BULLET);
+		_grpEnemyBullets.add(b);
 	}
 	
 	private function doneFadeIn():Void
@@ -127,6 +150,37 @@ class PlayState extends FlxState
 		super.update();
 		
 		FlxG.collide(_room.walls, _grpPlayers);
-		//FlxG.collide(_room.walls, _grpPlayerBullets);
+		FlxG.collide(_room.walls, _grpEnemyBullets);
+		for (i in 0...4)
+		{
+			if (_grpPlayerBullets[i] != null)
+			{
+				FlxG.collide(_room.walls, _grpPlayerBullets[i]);
+				FlxG.overlap(_grpPlayerBullets[i], _boss, bulletHitBoss);
+			}
+			if (_players[i])
+			{
+				FlxG.overlap(_grpEnemyBullets, _playerSprites[i], enemyBulletHitPlayer);
+			}
+		}
+		
 	}	
+	
+	private function enemyBulletHitPlayer(Bull:Bullet, Play:PlayerSprite):Void
+	{
+		if (Bull.alive && Bull.exists)
+		{
+			Bull.kill();
+		}
+	}
+	
+	private function bulletHitBoss(Bull:Bullet, Seg:BossSegment):Void
+	{
+		if (Bull.alive && Bull.exists)
+		{
+			Bull.kill();
+			_boss.hurt(1 * Seg.damageMod);
+			Seg.flash();
+		}
+	}
 }

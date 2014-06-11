@@ -44,11 +44,6 @@ class PlayerSprite extends FlxSprite
 		offset.x = 9;
 		offset.y = 4;
 		maxVelocity.x = MAX_X_SPEED;
-		
-		FlxG.watch.add(this, "_jumpTimer");
-		FlxG.watch.add(this, "_doubleJumpReady");
-		FlxG.watch.add(this, "_didDoubleJump");
-		FlxG.watch.add(this, "_shootTimer");
 	}
 	
 	override public function update():Void 
@@ -90,19 +85,20 @@ class PlayerSprite extends FlxSprite
 		if (_left && _right)
 			_left = _right = false;
 		
-		if (_fire)
-			maxVelocity.x = MAX_X_SPEED * .6;
-		else
-			maxVelocity.x = MAX_X_SPEED;
+		maxVelocity.x = MAX_X_SPEED;
 	
 		// HORIZONTAL MOVEMENT
 		if (_left)
 		{
 			if (!_fire)
 			{
-				offset.x = 9;
 				facing = FlxObject.LEFT;
 			}
+			else if (facing == FlxObject.RIGHT)
+			{
+				maxVelocity.x = MAX_X_SPEED * .6;
+			}
+			
 			velocity.x -= ACCELERATION;
 			
 		}
@@ -110,8 +106,11 @@ class PlayerSprite extends FlxSprite
 		{
 			if (!_fire)
 			{
-				offset.x = 5;
 				facing = FlxObject.RIGHT;
+			}
+			else if (facing == FlxObject.LEFT)
+			{
+				maxVelocity.x = MAX_X_SPEED * .6;
 			}
 			velocity.x += ACCELERATION;
 		}
@@ -213,5 +212,17 @@ class PlayerSprite extends FlxSprite
 		
 	}
 	
+	override function set_facing(Direction:Int):Int 
+	{
+		if (Direction == FlxObject.RIGHT)
+		{
+			offset.x = 5;
+		}
+		else if (Direction == FlxObject.LEFT)
+		{
+			offset.x = 9;
+		}
+		return super.set_facing(Direction);
+	}
 	
 }
