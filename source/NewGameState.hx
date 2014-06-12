@@ -48,6 +48,10 @@ class NewGameState extends FlxUIState
 		FlxG.camera.fade(FlxColor.BLACK, .3, true, doneFadeIn);
 		
 		super.create();
+		
+		#if !FLX_NO_MOUSE
+		FlxG.mouse.visible = false;
+		#end
 	}
 	
 	private function doneFadeIn():Void

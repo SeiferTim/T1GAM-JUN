@@ -1,6 +1,8 @@
 package;
 
+import flixel.addons.ui.FlxUICursor;
 import flixel.addons.ui.FlxUIState;
+import flixel.addons.ui.MultiKey;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -18,10 +20,21 @@ class MenuState extends FlxUIState
 	 */
 	override public function create():Void
 	{
+		
+		#if !FLX_NO_MOUSE
+		FlxG.mouse.visible = true;
+		#end
+		
 		_xml_id = "state_menu";
 		
+		cursor = new FlxUICursor(onCursorEvent, FlxUICursor.INPUT_KEYS | FlxUICursor.INPUT_GAMEPAD, FlxUICursor.KEYS_DEFAULT_ARROWS | FlxUICursor.KEYS_DEFAULT_TAB | FlxUICursor.KEYS_DEFAULT_WASD);
+		cursor.keysClick.push(new MultiKey(FlxG.keys.getKeyCode("X")));
+		cursor.keysClick.push(new MultiKey(FlxG.keys.getKeyCode("C")));
+		cursor.keysClick.push(new MultiKey(FlxG.keys.getKeyCode("P")));
 		super.create();
+		
 	}
+	
 	
 	override public function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>):Void 
 	{
@@ -46,6 +59,7 @@ class MenuState extends FlxUIState
 	 */
 	override public function destroy():Void
 	{
+		
 		super.destroy();
 	}
 

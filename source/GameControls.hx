@@ -1,5 +1,6 @@
 package ;
 import flixel.FlxG;
+import flixel.input.FlxInput.FlxInputState;
 import flixel.input.gamepad.FlxGamepad;
 import flixel.input.gamepad.LogitechButtonID;
 
@@ -46,7 +47,7 @@ class GameControls
 	#if !FLX_NO_GAMEPAD
 	public static var buttons:Array<Array<Array<Int>>>;
 	public static var idStringMap = new Map<Int, String>();
-	private static var _defaultButtons:Array<Array<Int>>;
+	private static var _defaultButtons:Array<Array<Array<Int>>>;
 	#end
 	
 	public static var inputs:Array<Array<Array<Bool>>>;
@@ -102,14 +103,14 @@ class GameControls
 		buttons[0] = [];
 		#if flash
 		
-		buttons[0][LFFT] = [LogitechButtonID.DPAD_LEFT];
+		buttons[0][LEFT] = [LogitechButtonID.DPAD_LEFT];
 		buttons[0][RIGHT] = [LogitechButtonID.DPAD_RIGHT];
 		buttons[0][UP] = [LogitechButtonID.DPAD_UP];
 		buttons[0][DOWN] = [LogitechButtonID.DPAD_DOWN];
 		
 		#else
 		
-		buttons[0][LFFT] = [-1];
+		buttons[0][LEFT] = [-1];
 		buttons[0][RIGHT] = [-1];
 		buttons[0][UP] = [-1];
 		buttons[0][DOWN] = [-1];
@@ -119,6 +120,7 @@ class GameControls
 		buttons[0][FIRE] = [LogitechButtonID.ONE, LogitechButtonID.TWO];
 		buttons[0][PAUSE] = [LogitechButtonID.TEN];
 		buttons[0][BACK] = [LogitechButtonID.NINE];
+		buttons[0][JUMP] = [LogitechButtonID.THREE];
 		buttons[0][SELLEFT] = buttons[0][LEFT].concat(buttons[0][UP]);
 		buttons[0][SELRIGHT] = buttons[0][RIGHT].concat(buttons[0][DOWN]);
 		buttons[0][SELECT] = buttons[0][JUMP].concat(buttons[0][FIRE]).concat(buttons[0][PAUSE]);
@@ -151,7 +153,7 @@ class GameControls
 	}
 	
 	#if !FLX_NO_GAMEPAD
-	public static function buildButtonsStrings():Void
+	public static function buildButtonStrings():Void
 	{
 		#if flash
 		var buttons:Array<String> = Type.getClassFields(LogitechButtonID);
@@ -194,26 +196,38 @@ class GameControls
 	
 	public static function anyButtonJustReleased(PlayerNo:Int, Buttons:Int):Bool
 	{
-		if (FlxG.gamepads.getByID[PlayerNo])
+		#if !FLX_NO_GAMEPAD
+		var g:FlxGamepad = FlxG.gamepads.getByID(PlayerNo);
+		if (g != null)
 		{
-			return FlxG.gamepads.getByID[PlayerNo].anyJustReleased(buttons[PlayerNo][Buttons]);
+			return g.anyJustReleased(buttons[PlayerNo][Buttons]);
 		}
+		#end
+		return false;
 	}
 	
 	public static function anyButtonJustPressed(PlayerNo:Int, Buttons:Int):Bool
 	{
-		if (FlxG.gamepads.getByID[PlayerNo])
+		#if !FLX_NO_GAMEPAD
+		var g:FlxGamepad = FlxG.gamepads.getByID(PlayerNo);
+		if (g != null)
 		{
-			return FlxG.gamepads.getByID[PlayerNo].anyJustPressed(buttons[PlayerNo][Buttons]);
+			return g.anyJustPressed(buttons[PlayerNo][Buttons]);
 		}
+		#end
+		return false;
 	}
 	
 	public static function anyButtonPressed(PlayerNo:Int, Buttons:Int):Bool 
 	{
-		if (FlxG.gamepads.getByID[PlayerNo])
+		#if !FLX_NO_GAMEPAD
+		var g:FlxGamepad = FlxG.gamepads.getByID(PlayerNo);
+		if (g != null)
 		{
-			return FlxG.gamepads.getByID[PlayerNo].anyPressed(buttons[PlayerNo][Buttons]);
+			return g.anyPressed(buttons[PlayerNo][Buttons]);
 		}
+		#end
+		return false;
 	}
 	
 	public static function anyKeyJustReleased(PlayerNo:Int, Keys:Int):Bool

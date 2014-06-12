@@ -29,7 +29,7 @@ class PlayState extends FlxState
 	private var _grpPlayerBullets:Array<FlxTypedGroup<Bullet>>;
 	private var _boss:Boss;
 	private var _playerSpawns:Array<FlxPoint>;
-	private var _barBossHealth:FlxBar;
+	public var barBossHealth:FlxBar;
 	private var _grpEnemyBullets:FlxTypedGroup<Bullet>;
 		
 	public function new(Players:Array<Int>):Void
@@ -56,6 +56,7 @@ class PlayState extends FlxState
 	 */
 	override public function create():Void
 	{
+		
 		
 		_room = new Room(Reg.level);
 		add(_room.bg);
@@ -94,14 +95,19 @@ class PlayState extends FlxState
 		_grpEnemyBullets = new FlxTypedGroup<Bullet>();
 		add(_grpEnemyBullets);
 		
-		_barBossHealth = new FlxBar(10, 5, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width - 20, 10, _boss, "health", 0, 100, true);
-		add(_barBossHealth);
+		barBossHealth = new FlxBar(10, 5, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width - 20, 10, _boss, "health", 0, 100, true);
+		barBossHealth.alpha = 0;
+		add(barBossHealth);
 		
 		Reg.currentPlayState = this;
 		
 		FlxG.camera.fade(FlxColor.BLACK, .3, true, doneFadeIn);
 		
 		super.create();
+		
+		#if !FLX_NO_MOUSE
+		FlxG.mouse.visible = false;
+		#end
 	}
 	
 	public function fireBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, PlayerNo:Int):Bool
@@ -176,7 +182,7 @@ class PlayState extends FlxState
 	
 	private function bulletHitBoss(Bull:Bullet, Seg:BossSegment):Void
 	{
-		if (Bull.alive && Bull.exists)
+		if (Bull.alive && Bull.exists && _boss.vulnerable)
 		{
 			Bull.kill();
 			_boss.hurt(1 * Seg.damageMod);
