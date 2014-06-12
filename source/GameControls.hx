@@ -3,6 +3,7 @@ import flixel.FlxG;
 import flixel.input.FlxInput.FlxInputState;
 import flixel.input.gamepad.FlxGamepad;
 import flixel.input.gamepad.LogitechButtonID;
+using flixel.util.FlxArrayUtil;
 
 class GameControls
 {
@@ -90,11 +91,11 @@ class GameControls
 		keys[1][SELECT] = keys[1][JUMP].concat(keys[1][FIRE]).concat(keys[1][PAUSE]);
 		keys[1][ANY] = keys[1][LEFT].concat(keys[1][UP]).concat(keys[1][RIGHT]).concat(keys[1][DOWN]).concat(keys[1][JUMP]).concat(keys[1][FIRE]).concat(keys[1][PAUSE]);
 		
-		keys[2] = keys[1].copy();
+		keys[2] = keys[1].clone();
 		
-		keys[3] = keys[2].copy();
+		keys[3] = keys[2].clone();
 		
-		_defaultKeys = keys.copy();
+		_defaultKeys = keys.clone();
 		#end
 		
 		#if !FLX_NO_GAMEPAD
@@ -117,20 +118,20 @@ class GameControls
 		
 		#end
 		
-		buttons[0][FIRE] = [LogitechButtonID.ONE, LogitechButtonID.TWO];
+		buttons[0][FIRE] = [LogitechButtonID.ONE, LogitechButtonID.THREE];
 		buttons[0][PAUSE] = [LogitechButtonID.TEN];
 		buttons[0][BACK] = [LogitechButtonID.NINE];
-		buttons[0][JUMP] = [LogitechButtonID.THREE];
+		buttons[0][JUMP] = [LogitechButtonID.TWO];
 		buttons[0][SELLEFT] = buttons[0][LEFT].concat(buttons[0][UP]);
 		buttons[0][SELRIGHT] = buttons[0][RIGHT].concat(buttons[0][DOWN]);
 		buttons[0][SELECT] = buttons[0][JUMP].concat(buttons[0][FIRE]).concat(buttons[0][PAUSE]);
 		buttons[0][ANY] = buttons[0][LEFT].concat(buttons[0][UP]).concat(buttons[0][RIGHT]).concat(buttons[0][DOWN]).concat(buttons[0][JUMP]).concat(buttons[0][FIRE]).concat(buttons[0][PAUSE]);
 		
-		buttons[1] = buttons[0].copy();
-		buttons[2] = buttons[1].copy();
-		buttons[3] = buttons[2].copy();
+		buttons[1] = buttons[0].clone();
+		buttons[2] = buttons[0].clone();
+		buttons[3] = buttons[0].clone();
 		
-		_defaultButtons = buttons.copy();
+		_defaultButtons = buttons.clone();
 		
 		
 		#end
@@ -150,6 +151,8 @@ class GameControls
 		}
 		
 		initialized = true;
+		
+		
 	}
 	
 	#if !FLX_NO_GAMEPAD
@@ -221,7 +224,7 @@ class GameControls
 	public static function anyButtonPressed(PlayerNo:Int, Buttons:Int):Bool 
 	{
 		#if !FLX_NO_GAMEPAD
-		var g:FlxGamepad = FlxG.gamepads.getByID(PlayerNo);
+		var g:FlxGamepad = FlxG.gamepads.getByID(PlayerNo);		
 		if (g != null)
 		{
 			return g.anyPressed(buttons[PlayerNo][Buttons]);

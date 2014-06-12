@@ -36,7 +36,7 @@ class PlayState extends FlxState
 	{
 		super();
 		
-		bgColor = FlxColor.CHARCOAL;
+		bgColor = FlxColor.GRAY;
 		
 		_players = [false, false, false, false];
 		for (i in 0...4)

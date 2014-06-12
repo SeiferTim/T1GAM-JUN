@@ -25,6 +25,9 @@ class NewGameState extends FlxUIState
 	{
 		GameControls.init();
 		
+		//FlxG.watch.add(FlxG, "gamepads");
+		FlxG.watch.add(FlxG.gamepads, "numActiveGamepads");
+		
 		_xml_id = "state_newgame";
 		
 		_players = [false, false, false, false];
