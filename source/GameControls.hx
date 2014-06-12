@@ -1,5 +1,6 @@
 package ;
 import flixel.FlxG;
+import flixel.input.gamepad.FlxGamepad;
 
 class GameControls
 {
@@ -39,6 +40,14 @@ class GameControls
 	#if !FLX_NO_KEYBOAD
 	public static var keys:Array<Array<Array<String>>>;
 	private static var _defaultKeys:Array<Array<Array<String>>>;
+	#end
+	
+	#if !FLX_NO_GAMEPAD
+	public static var hasGamepads:Array<Bool>;
+	public static var gamepags:Array<FlxGamepad>;
+	public static var buttons:Array<Array<Array<Int>>>;
+	public static var idStringMap = new Map<Int, String>();
+	private static var _defaultButtons:Array<Array<Int>>;
 	#end
 	
 	public static var inputs:Array<Array<Array<Bool>>>;
@@ -112,6 +121,12 @@ class GameControls
 		_defaultKeys = keys.copy();
 		#end
 		
+		#if !FLX_NO_GAMEPAD
+		buttons = [];
+		buildButtonStrings();
+		
+		#end
+		
 		inputs = [];
 		for (i in 0...4)
 		{
@@ -128,6 +143,34 @@ class GameControls
 		
 		initialized = true;
 	}
+	
+	#if !FLX_NO_GAMEPAD
+	public static function buildButtonsStrings():Void
+	{
+		#if flash
+		var buttons:Array<String> = Type.getClassFields(LogitechButtonID);
+		var value:Int;
+		for (field in buttons)
+		{
+			
+			value = Reflect.getProperty(LogitechButtonID, field);
+			idStringMap.set(value, field);
+			
+		}
+		#else
+		idStringMap.set(0, "ONE");
+		idStringMap.set(1, "TWO");
+		idStringMap.set(2, "THREE");
+		idStringMap.set(3, "FOUR");
+		idStringMap.set(4, "FIVE");
+		idStringMap.set(5, "SIX");
+		idStringMap.set(6, "SEVEN");
+		idStringMap.set(7, "EIGHT");
+		idStringMap.set(8, "NINE");
+		idStringMap.set(9, "TEN");
+		#end
+	}
+	#end
 	
 	public static function checkInputs(PlayerNo:Int):Void
 	{
