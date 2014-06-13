@@ -91,11 +91,11 @@ class GameControls
 		keys[1][SELECT] = keys[1][JUMP].concat(keys[1][FIRE]).concat(keys[1][PAUSE]);
 		keys[1][ANY] = keys[1][LEFT].concat(keys[1][UP]).concat(keys[1][RIGHT]).concat(keys[1][DOWN]).concat(keys[1][JUMP]).concat(keys[1][FIRE]).concat(keys[1][PAUSE]);
 		
-		keys[2] = keys[1].clone();
+		keys[2] = keys[1].copy();
+		keys[3] = keys[2].copy();
 		
-		keys[3] = keys[2].clone();
 		
-		_defaultKeys = keys.clone();
+		_defaultKeys = keys.copy();
 		#end
 		
 		#if !FLX_NO_GAMEPAD
@@ -127,11 +127,11 @@ class GameControls
 		buttons[0][SELECT] = buttons[0][JUMP].concat(buttons[0][FIRE]).concat(buttons[0][PAUSE]);
 		buttons[0][ANY] = buttons[0][LEFT].concat(buttons[0][UP]).concat(buttons[0][RIGHT]).concat(buttons[0][DOWN]).concat(buttons[0][JUMP]).concat(buttons[0][FIRE]).concat(buttons[0][PAUSE]);
 		
-		buttons[1] = buttons[0].clone();
-		buttons[2] = buttons[0].clone();
-		buttons[3] = buttons[0].clone();
+		buttons[1] = buttons[0].copy();
+		buttons[2] = buttons[0].copy();
+		buttons[3] = buttons[0].copy();
 		
-		_defaultButtons = buttons.clone();
+		_defaultButtons = buttons.copy();
 		
 		
 		#end

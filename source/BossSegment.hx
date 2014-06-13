@@ -17,6 +17,7 @@ class BossSegment extends FlxSprite
 	private var _gfxBuffer:BitmapData;
 	private var _gfxFlash:BitmapData;
 	private var _flashTimer:FlxTimer;
+	public var hurtCallback:Float->Void;
 	
 	public function new(X:Float, Y:Float)
 	{
@@ -48,5 +49,11 @@ class BossSegment extends FlxSprite
 	{ 
 		pixels.copyPixels(_gfxBuffer, _gfxBuffer.rect, _flashPointZero); 
 		dirty = true;
+	}
+	
+	override public function hurt(Damage:Float):Void 
+	{
+		flash();
+		hurtCallback(Damage * damageMod);
 	}
 }

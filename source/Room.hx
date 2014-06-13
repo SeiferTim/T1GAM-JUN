@@ -11,6 +11,7 @@ class Room
 	public var bg:FlxTilemap;
 	public var walls:FlxTilemap;
 	public var spawns:Array<FlxPoint>;
+	public var espawns:Array<FlxPoint>;
 	
 	public function new(RoomNo:Int)
 	{
@@ -21,13 +22,21 @@ class Room
 		walls.setTileProperties(2, FlxObject.CEILING);
 		
 		spawns = [];
+		espawns = [];
 		_map.loadEntities(loadSpawn, "PlayerSpawns");
 		
 	}
 	
 	private function loadSpawn(EntityType:String, Data:Xml):Void
 	{
-		spawns.push(FlxPoint.get(Std.parseFloat(Data.get("x")), Std.parseFloat(Data.get("y"))));
+		switch (EntityType)
+		{
+			case "PlayerStart":
+				spawns.push(FlxPoint.get(Std.parseFloat(Data.get("x")), Std.parseFloat(Data.get("y"))));
+			case "EnemySpawn":
+				espawns.push(FlxPoint.get(Std.parseFloat(Data.get("x")), Std.parseFloat(Data.get("y"))));
+		}
+		
 	}
 	
 }

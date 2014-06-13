@@ -29,8 +29,10 @@ class PlayState extends FlxState
 	private var _grpPlayerBullets:Array<FlxTypedGroup<Bullet>>;
 	private var _boss:Boss;
 	private var _playerSpawns:Array<FlxPoint>;
+	public var enemySpawns:Array<FlxPoint>;
 	public var barBossHealth:FlxBar;
 	private var _grpEnemyBullets:FlxTypedGroup<Bullet>;
+	private var _grpEnemies:FlxTypedGroup<Enemy>;
 		
 	public function new(Players:Array<Int>):Void
 	{
@@ -43,6 +45,7 @@ class PlayState extends FlxState
 		{
 			if (Players[i] != -1)
 			{
+				Reg.playerCount++;
 				Reg.players[i] = new Player(i, Players[i]);
 				_players[i] = true;
 			}
@@ -71,8 +74,14 @@ class PlayState extends FlxState
 		_boss.setPosition(170, 110);
 		add(_boss);
 		
+		_grpEnemies = new FlxTypedGroup<Enemy>();
+		add(_grpEnemies);
+		
 		_playerSpawns = _room.spawns.copy();
 		_playerSpawns.shuffleArray(10);
+		
+		enemySpawns = _room.espawns.copy();
+		
 		
 		for (i in 0...4)
 		{
@@ -157,6 +166,7 @@ class PlayState extends FlxState
 		
 		FlxG.collide(_room.walls, _grpPlayers);
 		FlxG.collide(_room.walls, _grpEnemyBullets);
+		FlxG.collide(_room.walls, _grpEnemies);
 		for (i in 0...4)
 		{
 			if (_grpPlayerBullets[i] != null)
@@ -185,8 +195,17 @@ class PlayState extends FlxState
 		if (Bull.alive && Bull.exists && _boss.vulnerable)
 		{
 			Bull.kill();
-			_boss.hurt(1 * Seg.damageMod);
-			Seg.flash();
+			//_boss.hurt(1 * Seg.damageMod);
+			//Seg.flash();
+			Seg.hurt(1);
 		}
+	}
+	
+	public function spawnEnemy(EnemyType:Int, X:Float, Y:Float):Void
+	{
+		var e:Enemy;
+		e = new Enemy();
+		e.reset(X, Y);
+		_grpEnemies.add(e);
 	}
 }
