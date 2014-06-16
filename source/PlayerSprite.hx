@@ -4,6 +4,9 @@ import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxObject;
 import flixel.FlxSprite;
+import flixel.math.FlxPoint;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import flixel.util.FlxSignal;
 import flixel.util.FlxTimer;
 
@@ -30,10 +33,13 @@ class PlayerSprite extends FlxSprite
 	private var _shootTimer:Float = 0;
 	private var _doubleJumpReady:Bool = false;
 	private var _didDoubleJump:Bool = false;
+	private var _spawningTimer:Float = 0;
+	private var _ptSpawn:FlxPoint;
 	
 	public function new(X:Float=0, Y:Float=0, PlayerNumber:Int, Character:Int) 
 	{
 		super(X, Y);
+		_ptSpawn = FlxPoint.get(X, Y);
 		playerNumber = PlayerNumber;
 		character = Character;
 		loadGraphic("assets/images/player-" + character + ".png", false, 20, 20);
@@ -44,14 +50,34 @@ class PlayerSprite extends FlxSprite
 		offset.x = 9;
 		offset.y = 4;
 		maxVelocity.x = MAX_X_SPEED;
+		health = 1;
+		alive = false;
+		exists = true;
+		alpha = 0;
+		
 	}
 	
 	override public function update():Void 
 	{
-		
-		movement();
-		
+		if (!alive && exists && Reg.players[playerNumber].lives > 0)
+		{
+			if (_spawningTimer <= 0)
+			{
+				health = 1;
+				_spawningTimer++;
+				FlxTween.num(0, 1, .66, { ease:FlxEase.circInOut, startDelay:.66, complete:finishSpawn }, set_alpha);
+			}
+		}
+		else
+		{
+			movement();
+		}
 		super.update();
+	}
+	
+	private function finishSpawn(_):Void
+	{
+		alive = true;
 	}
 	
 	private function movement():Void
@@ -223,6 +249,25 @@ class PlayerSprite extends FlxSprite
 			offset.x = 9;
 		}
 		return super.set_facing(Direction);
+	}
+	
+	override public function hurt(Damage:Float):Void 
+	{
+		super.hurt(Damage);
+		_spawningTimer = 0;
+		alpha = 0;
+		velocity.x = 0;
+		velocity.y = 0;
+		setPosition(_ptSpawn.x, _ptSpawn.y);
+		Reg.players[playerNumber].lives--;
+		_jumpTimer = 0;
+		_landTimer = 0;
+		_ledgeBuffer = 0;
+		_shootTimer = 0;
+		_doubleJumpReady = false;
+		_didDoubleJump = false;
+		alive = false;
+		exists = true;
 	}
 	
 }

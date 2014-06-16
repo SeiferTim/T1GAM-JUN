@@ -161,7 +161,7 @@ class Boss extends FlxSpriteGroup
 				if (health == 0)
 				{
 					_actTimer++;
-					FlxTween.num(0, 100, 4, { ease:FlxEase.sineInOut, complete:finishHealthFill }, updateHealth);
+					FlxTween.num(0, Reg.playerCount * 200, 4, { ease:FlxEase.sineInOut, complete:finishHealthFill }, updateHealth);
 				}
 			}
 		}

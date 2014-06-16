@@ -87,7 +87,7 @@ class PlayState extends FlxState
 		{
 			if (_players[i])
 			{
-				_playerSprites[i] = new PlayerSprite(_playerSpawns[i].x - 10, _playerSpawns[i].y -10, i, Reg.players[i].character);
+				_playerSprites[i] = new PlayerSprite(_playerSpawns[i].x + 2, _playerSpawns[i].y - 6, i, Reg.players[i].character);
 				if (_playerSprites[i].x < FlxG.width / 2)
 					_playerSprites[i].facing = FlxObject.RIGHT;
 				else
@@ -104,7 +104,7 @@ class PlayState extends FlxState
 		_grpEnemyBullets = new FlxTypedGroup<Bullet>();
 		add(_grpEnemyBullets);
 		
-		barBossHealth = new FlxBar(10, 5, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width - 20, 10, _boss, "health", 0, 100, true);
+		barBossHealth = new FlxBar(10, 5, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width - 20, 10, _boss, "health", 0, Reg.playerCount * 200, true);
 		barBossHealth.alpha = 0;
 		add(barBossHealth);
 		
@@ -173,20 +173,40 @@ class PlayState extends FlxState
 			{
 				FlxG.collide(_room.walls, _grpPlayerBullets[i]);
 				FlxG.overlap(_grpPlayerBullets[i], _boss, bulletHitBoss);
+				FlxG.overlap(_grpPlayerBullets[i], _grpEnemies, bulletHitEnemy);
 			}
 			if (_players[i])
 			{
 				FlxG.overlap(_grpEnemyBullets, _playerSprites[i], enemyBulletHitPlayer);
+				FlxG.overlap(_grpEnemies, _playerSprites[i], enemyHitPlayer);
 			}
 		}
 		
 	}	
 	
-	private function enemyBulletHitPlayer(Bull:Bullet, Play:PlayerSprite):Void
+	private function bulletHitEnemy(Bull:Bullet, E:BossSegment):Void
 	{
-		if (Bull.alive && Bull.exists)
+		if (Bull.alive && Bull.exists && E.alive && E.exists)
 		{
 			Bull.kill();
+			E.hurt(1);
+		}
+	}
+	
+	private function enemyBulletHitPlayer(Bull:Bullet, Play:PlayerSprite):Void
+	{
+		if (Bull.alive && Bull.exists && Play.alive && Play.exists)
+		{
+			Bull.kill();
+			Play.hurt(1);
+		}
+	}
+	
+	private function enemyHitPlayer(E:BossSegment, Play:PlayerSprite)
+	{
+		if (E.alive && E.exists && Play.alive && Play.exists)
+		{
+			Play.hurt(1);
 		}
 	}
 	

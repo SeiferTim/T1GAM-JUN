@@ -33,7 +33,7 @@ class Enemy extends FlxSpriteGroup implements IEnemy
 	override public function reset(X:Float, Y:Float):Void
 	{
 		super.reset(X, Y);
-		health = 4;
+		health = 2;
 		facing = FlxRandom.chanceRoll() ? FlxObject.LEFT : FlxObject.RIGHT;
 		_hopTimer = -3;
 	}
@@ -74,6 +74,8 @@ class Enemy extends FlxSpriteGroup implements IEnemy
 	override public function hurt(Damage:Float):Void 
 	{
 		velocity.x = 0;
+		_hopTimer = -3;
+		
 		super.hurt(Damage);
 	}
 }
