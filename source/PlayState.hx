@@ -134,12 +134,15 @@ class PlayState extends FlxState
 		
 	}
 	
-	public function fireEnemyBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float):Void
+	public function fireEnemyBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, PlayerTarget:Int=-1):Void
 	{
 		var b:Bullet = _grpEnemyBullets.recycle();
 		if (b == null)
 			b = new Bullet();
-		b.fire(X, Y, VelocityX, VelocityY, Bullet.ENEMY_BULLET);
+		if (PlayerTarget == -1)
+			b.fire(X, Y, VelocityX, VelocityY, Bullet.ENEMY_BULLET);
+		else
+			b.fire(X, Y, VelocityX, VelocityY, Bullet.ENEMY_TRACKING, _playerSprites[PlayerTarget]);
 		_grpEnemyBullets.add(b);
 	}
 	
@@ -171,7 +174,7 @@ class PlayState extends FlxState
 		{
 			if (_grpPlayerBullets[i] != null)
 			{
-				FlxG.collide(_room.walls, _grpPlayerBullets[i]);
+				FlxG.overlap(_room.walls, _grpPlayerBullets[i]);
 				FlxG.overlap(_grpPlayerBullets[i], _boss, bulletHitBoss);
 				FlxG.overlap(_grpPlayerBullets[i], _grpEnemies, bulletHitEnemy);
 			}

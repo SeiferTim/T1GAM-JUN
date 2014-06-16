@@ -6,16 +6,17 @@ import flixel.input.android.FlxAndroidKeyList;
 import flixel.math.FlxAngle;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
+import flixel.math.FlxRandom;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
+using flixel.util.FlxArrayUtil;
 using flixel.math.FlxRandom;
 
 class Boss extends FlxSpriteGroup
 {
 
-	private var _brain:FSM;
 	private var _body:BossSegment;
 	private var _head:BossSegment;
 	private var _hands:Array<BossSegment>;
@@ -35,6 +36,11 @@ class Boss extends FlxSpriteGroup
 	private var _handsAngle:Array<Float>;
 	private var _handsPos:Array<FlxPoint>;
 	
+	private var _phase:Int = 0;
+	private var _phases:Array<Int>;
+	
+	private var _maxHealth:Int = 0;
+	
 	
 	public function new() 
 	{
@@ -42,9 +48,10 @@ class Boss extends FlxSpriteGroup
 		
 		vulnerable = false;
 		
-		_brain = new FSM(initialize);
+		//_brain = new FSM(initialize);
 		
 		health = 0;
+		_maxHealth = 200 * Reg.playerCount;
 		
 		_body = new BossSegment(0, 0);
 		_body.makeGraphic(60, 60, FlxColor.ORANGE);
@@ -73,6 +80,9 @@ class Boss extends FlxSpriteGroup
 		_handsPos = [FlxPoint.get( -8, 22), FlxPoint.get(52, 22)];
 
 		alpha = 0;
+		
+		_phases = [2, 3, 4];
+		
 	}
 	
 	
@@ -121,11 +131,36 @@ class Boss extends FlxSpriteGroup
 	
 	override public function update():Void 
 	{
+		if (health / _maxHealth < .75 && _phases.length == 3)
+		{
+			//_phases = _phases.concat([phaseFive, phaseSix, phaseSeven]);
+		}
 		
-		_brain.update();
+		updatePhase();
+		
 		updateHands();
 		
 		super.update();
+	}
+	
+	private function updatePhase():Void
+	{
+		switch (_phase) 
+		{
+			case 0:
+				initialize();
+			case 1:
+				fillBar();
+			case 2:
+				phaseTwo();
+			case 3:
+				phaseThree();
+			case 4:
+				phaseFour();
+			
+				
+				
+		}
 	}
 	
 	public function initialize():Void
@@ -161,7 +196,7 @@ class Boss extends FlxSpriteGroup
 				if (health == 0)
 				{
 					_actTimer++;
-					FlxTween.num(0, Reg.playerCount * 200, 4, { ease:FlxEase.sineInOut, complete:finishHealthFill }, updateHealth);
+					FlxTween.num(0, _maxHealth, 4, { ease:FlxEase.sineInOut, complete:finishHealthFill }, updateHealth);
 				}
 			}
 		}
@@ -173,11 +208,16 @@ class Boss extends FlxSpriteGroup
 				var delay:FlxTimer = new FlxTimer(.66, function(_) {
 					vulnerable = true;
 					_handMotion = HAND_WAVING;
-					_actTimer = 0;
-					_brain.activeState = phaseTwo;
+					switchPhase();
 				});
 			}
 		}
+	}
+	
+	private function pickPhase():Int
+	{
+		
+		return _phases.getObject();
 	}
 	
 	private function updateHealth(Value:Float):Void
@@ -209,7 +249,7 @@ class Boss extends FlxSpriteGroup
 	public function finishFadeIn(_):Void
 	{
 		_actTimer = 0;
-		_brain.activeState = fillBar;
+		_phase = 1;
 	}
 	
 	private function laugh(Start:Bool=false):Void
@@ -244,9 +284,7 @@ class Boss extends FlxSpriteGroup
 			
 			if (_actTimer > 5)
 			{
-				_actTimer = 0;
-				_shootTimer = 0;
-				_brain.activeState = phaseThree;
+				switchPhase();
 			}
 			else
 			{
@@ -297,9 +335,7 @@ class Boss extends FlxSpriteGroup
 			}
 			else
 			{
-				_shootTimer = 0;
-				_actTimer = 0;
-				_brain.activeState = phaseFour;
+				switchPhase();
 			}
 		}
 		else
@@ -308,9 +344,39 @@ class Boss extends FlxSpriteGroup
 		}
 	}
 	
+	private function switchPhase():Void
+	{
+		_actTimer = 0;
+		_shootTimer = 0;
+		_phase = pickPhase();
+	}
+	
 	public function phaseFour():Void
 	{
-		
+		if (_actTimer == 0)
+		{
+			if (_shootTimer > 1)
+			{
+				_actTimer++;
+				_shootTimer = 0;
+				
+				for (i in 0...Reg.playerCount)
+				{
+					Reg.currentPlayState.fireEnemyBullet(_head.x + 10, _head.y + 10, 0, 0, i);
+				}
+			}
+			else
+				_shootTimer += FlxG.elapsed * 4;
+		}
+		else if (_actTimer == 1)
+		{
+			if (_shootTimer > 1)
+			{
+				switchPhase();
+			}
+			else
+				_shootTimer += FlxG.elapsed;
+		}
 	}
 	
 	
