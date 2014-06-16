@@ -293,4 +293,11 @@ class PlayState extends FlxState
 		var _m:FlxPoint = e.getMidpoint();
 		addExplosion(_m.x, _m.y, HURTS_NONE);
 	}
+	
+	public function startMusic():Void
+	{
+		FlxG.sound.playMusic(AssetPaths.Boss_Music_Intro__mp3, 1, false);
+		FlxG.sound.music.onComplete = function() { FlxG.sound.playMusic(AssetPaths.Boss_Music__mp3); };
+		
+	}
 }

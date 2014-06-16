@@ -193,7 +193,8 @@ class Boss extends FlxSpriteGroup
 				if (health == 0)
 				{
 					_actTimer++;
-					FlxTween.num(0, _maxHealth, 4, { ease:FlxEase.sineInOut, complete:finishHealthFill }, updateHealth);
+					
+					FlxTween.num(0, _maxHealth, 3, { ease:FlxEase.sineInOut, complete:finishHealthFill }, updateHealth);
 				}
 			}
 		}
@@ -202,6 +203,7 @@ class Boss extends FlxSpriteGroup
 			if (_laughDone)
 			{
 				_actTimer++;
+				Reg.currentPlayState.startMusic();
 				var delay:FlxTimer = new FlxTimer(.66, function(_) {
 					vulnerable = true;
 					_handMotion = HAND_WAVING;
@@ -218,6 +220,7 @@ class Boss extends FlxSpriteGroup
 	
 	private function finishHealthFill(_):Void
 	{
+		
 		laugh(true);
 	}
 	
