@@ -18,12 +18,3 @@ class Player
 	}
 	
 }
-
-enum Characters {
-	RED;
-	YELLOW;
-	GREEN;
-	//CYAN;
-	BLUE;
-	//MAGENTA;
-}

@@ -68,7 +68,7 @@ class PlayerSprite extends FlxSprite
 				FlxTween.num(0, 1, .66, { ease:FlxEase.circInOut, startDelay:.66, complete:finishSpawn }, set_alpha);
 			}
 		}
-		else
+		else if(alive)
 		{
 			movement();
 		}

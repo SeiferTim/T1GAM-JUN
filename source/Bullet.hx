@@ -2,6 +2,7 @@ package ;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
+import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
 using flixel.math.FlxVelocity;
 
@@ -40,6 +41,7 @@ class Bullet extends FlxSprite
 				facing = FlxObject.LEFT;
 			else
 				facing = FlxObject.RIGHT;
+				
 			allowCollisions = FlxObject.ANY;
 		}
 		else
@@ -55,6 +57,8 @@ class Bullet extends FlxSprite
 	private function pop():Void
 	{
 		// explode?
+		var m:FlxPoint = getMidpoint();
+		Reg.currentPlayState.addExplosion(m.x, m.y, PlayState.HURTS_PLAYER);
 		kill();
 	}
 	

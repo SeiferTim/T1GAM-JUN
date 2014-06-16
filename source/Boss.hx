@@ -37,7 +37,7 @@ class Boss extends FlxSpriteGroup
 	private var _handsPos:Array<FlxPoint>;
 	
 	private var _phase:Int = 0;
-	private var _phases:Array<Int>;
+	//private var _phases:Array<Int>;
 	
 	private var _maxHealth:Int = 0;
 	
@@ -81,7 +81,7 @@ class Boss extends FlxSpriteGroup
 
 		alpha = 0;
 		
-		_phases = [2, 3, 4];
+		//_phases = [2, 3, 4];
 		
 	}
 	
@@ -131,10 +131,7 @@ class Boss extends FlxSpriteGroup
 	
 	override public function update():Void 
 	{
-		if (health / _maxHealth < .75 && _phases.length == 3)
-		{
-			//_phases = _phases.concat([phaseFive, phaseSix, phaseSeven]);
-		}
+		
 		
 		updatePhase();
 		
@@ -214,12 +211,6 @@ class Boss extends FlxSpriteGroup
 		}
 	}
 	
-	private function pickPhase():Int
-	{
-		
-		return _phases.getObject();
-	}
-	
 	private function updateHealth(Value:Float):Void
 	{
 		health = Std.int(Value);
@@ -271,10 +262,16 @@ class Boss extends FlxSpriteGroup
 		if (_laughTimes > 4)
 		{
 			T.cancel();
-			_laughDone = true;
+			FlxTween.num(_head.y, _head.y - 4, .1, { ease:FlxEase.quintInOut, type:FlxTween.ONESHOT, complete:doneDoneLaugh }, updateHeadY);
 		}
 		//else
 		//	laugh();
+	}
+	
+	private function doneDoneLaugh(_):Void
+	{
+		
+		_laughDone = true;
 	}
 	
 	public function phaseTwo():Void
@@ -318,17 +315,11 @@ class Boss extends FlxSpriteGroup
 				
 				Reg.currentPlayState.enemySpawns.shuffleArray(10);
 				
-				Reg.currentPlayState.spawnEnemy(0, Reg.currentPlayState.enemySpawns[0].x, Reg.currentPlayState.enemySpawns[0].y);
-				
-				if (Reg.playerCount > 1)
-					Reg.currentPlayState.spawnEnemy(0, Reg.currentPlayState.enemySpawns[1].x, Reg.currentPlayState.enemySpawns[1].y);
-				
-				if (Reg.playerCount > 2)
-					Reg.currentPlayState.spawnEnemy(0, Reg.currentPlayState.enemySpawns[2].x, Reg.currentPlayState.enemySpawns[2].y);
-				
-				if (Reg.playerCount > 3)
-					Reg.currentPlayState.spawnEnemy(0, Reg.currentPlayState.enemySpawns[3].x, Reg.currentPlayState.enemySpawns[3].y);
-				
+				for (i in 0...Reg.playerCount)
+				{
+					if (Reg.currentPlayState.playerSprites[i].alive)
+						Reg.currentPlayState.spawnEnemy(0, Reg.currentPlayState.enemySpawns[i].x, Reg.currentPlayState.enemySpawns[i].y);
+				}
 				
 				_shootTimer++;
 				_actTimer = 0;
@@ -348,7 +339,8 @@ class Boss extends FlxSpriteGroup
 	{
 		_actTimer = 0;
 		_shootTimer = 0;
-		_phase = pickPhase();
+		_phase = FlxRandom.int(2, 4, [_phase]);
+		//_phase = 
 	}
 	
 	public function phaseFour():Void
@@ -362,7 +354,8 @@ class Boss extends FlxSpriteGroup
 				
 				for (i in 0...Reg.playerCount)
 				{
-					Reg.currentPlayState.fireEnemyBullet(_head.x + 10, _head.y + 10, 0, 0, i);
+					if (Reg.currentPlayState.playerSprites[i].alive)
+						Reg.currentPlayState.fireEnemyBullet(_head.x + 10, _head.y + 10, 0, 0, i);
 				}
 			}
 			else

@@ -22,8 +22,13 @@ using flixel.math.FlxRandom;
 class PlayState extends FlxState
 {
 	
+	public static inline var HURTS_NONE:Int = 0x00;
+	public static inline var HURTS_PLAYER:Int = 0x01;
+	public static inline var HURTS_ENEMY:Int = 0x10;
+	public static inline var HURTS_ANY:Int = 0x11;
+	
 	private var _players:Array<Bool>;
-	private var _playerSprites:Array<PlayerSprite>;
+	public var playerSprites:Array<PlayerSprite>;
 	private var _room:Room;
 	private var _grpPlayers:FlxTypedGroup<PlayerSprite>;
 	private var _grpPlayerBullets:Array<FlxTypedGroup<Bullet>>;
@@ -33,12 +38,17 @@ class PlayState extends FlxState
 	public var barBossHealth:FlxBar;
 	private var _grpEnemyBullets:FlxTypedGroup<Bullet>;
 	private var _grpEnemies:FlxTypedGroup<Enemy>;
+	private var _playerStats:Array<PlayerStat>;
+	private var _grpHUD:FlxGroup;
+	private var _grpExplosions:FlxTypedGroup<Explosion>;
+	
+	
 		
 	public function new(Players:Array<Int>):Void
 	{
 		super();
 		
-		bgColor = FlxColor.GRAY;
+		bgColor = 0xff333333;
 		
 		_players = [false, false, false, false];
 		for (i in 0...4)
@@ -66,7 +76,7 @@ class PlayState extends FlxState
 		add(_room.walls);
 		_grpPlayerBullets = [];
 		
-		_playerSprites = [];
+		playerSprites = [];
 		
 		_grpPlayers = new FlxTypedGroup<PlayerSprite>(4);
 		
@@ -82,19 +92,25 @@ class PlayState extends FlxState
 		
 		enemySpawns = _room.espawns.copy();
 		
+		_grpHUD = new flixel.group.FlxGroup();
+		_playerStats = [];
 		
 		for (i in 0...4)
 		{
 			if (_players[i])
 			{
-				_playerSprites[i] = new PlayerSprite(_playerSpawns[i].x + 2, _playerSpawns[i].y - 6, i, Reg.players[i].character);
-				if (_playerSprites[i].x < FlxG.width / 2)
-					_playerSprites[i].facing = FlxObject.RIGHT;
+				playerSprites[i] = new PlayerSprite(_playerSpawns[i].x + 2, _playerSpawns[i].y - 6, i, Reg.players[i].character);
+				if (playerSprites[i].x < FlxG.width / 2)
+					playerSprites[i].facing = FlxObject.RIGHT;
 				else
-					_playerSprites[i].facing = FlxObject.LEFT;
-				_grpPlayers.add(_playerSprites[i]);
+					playerSprites[i].facing = FlxObject.LEFT;
+				_grpPlayers.add(playerSprites[i]);
 				_grpPlayerBullets[i] = new FlxTypedGroup<Bullet>(6);
 				add(_grpPlayerBullets[i]);
+				
+				_playerStats[i] = new PlayerStat((i == 0 || i == 2 ? 5 : FlxG.width - 80), (i == 0 || i == 1 ? 5 : FlxG.height - 15), Reg.players[i].character);
+				_grpHUD.add(_playerStats[i]);
+				
 			}
 		}		
 		
@@ -104,10 +120,15 @@ class PlayState extends FlxState
 		_grpEnemyBullets = new FlxTypedGroup<Bullet>();
 		add(_grpEnemyBullets);
 		
-		barBossHealth = new FlxBar(10, 5, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width - 20, 10, _boss, "health", 0, Reg.playerCount * 200, true);
-		barBossHealth.alpha = 0;
-		add(barBossHealth);
+		_grpExplosions = new FlxTypedGroup<Explosion>();
+		add(_grpExplosions);
 		
+		barBossHealth = new FlxBar(100, 5, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width - 200, 10, _boss, "health", 0, Reg.playerCount * 200, true);
+		barBossHealth.alpha = 0;
+		_grpHUD.add(barBossHealth);
+		
+		
+		add(_grpHUD);
 		Reg.currentPlayState = this;
 		
 		FlxG.camera.fade(FlxColor.BLACK, .3, true, doneFadeIn);
@@ -134,6 +155,15 @@ class PlayState extends FlxState
 		
 	}
 	
+	public function addExplosion(X:Float, Y:Float, Hurts:Int = 0):Void
+	{
+		var e:Explosion = _grpExplosions.recycle();
+		if (e == null)
+			e = new Explosion();
+		e.burst(X, Y, Hurts);
+		_grpExplosions.add(e);
+	}
+	
 	public function fireEnemyBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, PlayerTarget:Int=-1):Void
 	{
 		var b:Bullet = _grpEnemyBullets.recycle();
@@ -142,7 +172,7 @@ class PlayState extends FlxState
 		if (PlayerTarget == -1)
 			b.fire(X, Y, VelocityX, VelocityY, Bullet.ENEMY_BULLET);
 		else
-			b.fire(X, Y, VelocityX, VelocityY, Bullet.ENEMY_TRACKING, _playerSprites[PlayerTarget]);
+			b.fire(X, Y, VelocityX, VelocityY, Bullet.ENEMY_TRACKING, playerSprites[PlayerTarget]);
 		_grpEnemyBullets.add(b);
 	}
 	
@@ -170,22 +200,50 @@ class PlayState extends FlxState
 		FlxG.collide(_room.walls, _grpPlayers);
 		FlxG.collide(_room.walls, _grpEnemyBullets);
 		FlxG.collide(_room.walls, _grpEnemies);
+		FlxG.overlap(_boss, _grpExplosions, explosionHitsBoss);
+		FlxG.overlap(_grpEnemies, _grpExplosions, explosionHitsEnemy);
 		for (i in 0...4)
 		{
 			if (_grpPlayerBullets[i] != null)
 			{
-				FlxG.overlap(_room.walls, _grpPlayerBullets[i]);
+				FlxG.collide(_room.walls, _grpPlayerBullets[i]);
 				FlxG.overlap(_grpPlayerBullets[i], _boss, bulletHitBoss);
 				FlxG.overlap(_grpPlayerBullets[i], _grpEnemies, bulletHitEnemy);
 			}
 			if (_players[i])
 			{
-				FlxG.overlap(_grpEnemyBullets, _playerSprites[i], enemyBulletHitPlayer);
-				FlxG.overlap(_grpEnemies, _playerSprites[i], enemyHitPlayer);
+				FlxG.overlap(_grpEnemyBullets, playerSprites[i], enemyBulletHitPlayer);
+				FlxG.overlap(_grpEnemies, playerSprites[i], enemyHitPlayer);
+				FlxG.overlap(playerSprites[i], _grpExplosions, explosionHitsPlayer);
 			}
 		}
 		
 	}	
+	
+	private function explosionHitsBoss(B:BossSegment, E:ExplosionCloud):Void
+	{
+		if (B.alive && B.exists && _boss.vulnerable && E.alive && E.exists && E.parent.hurts == HURTS_ENEMY)
+		{
+			B.hurt(1);
+		}
+	}
+	
+	private function explosionHitsEnemy(B:BossSegment, E:ExplosionCloud):Void
+	{
+		if (B.alive && B.exists && E.alive && E.exists && E.parent.hurts == HURTS_ENEMY)
+		{
+			B.hurt(1);
+		}
+	}
+	
+	private function explosionHitsPlayer(P:PlayerSprite, E:ExplosionCloud):Void
+	{
+		if (P.alive && P.exists && E.alive && E.exists && E.parent.hurts == HURTS_ENEMY)
+		{
+			P.hurt(1);
+			_playerStats[P.playerNumber].updateLives(Reg.players[P.playerNumber].lives);
+		}
+	}
 	
 	private function bulletHitEnemy(Bull:Bullet, E:BossSegment):Void
 	{
@@ -202,6 +260,7 @@ class PlayState extends FlxState
 		{
 			Bull.kill();
 			Play.hurt(1);
+			_playerStats[Play.playerNumber].updateLives(Reg.players[Play.playerNumber].lives);
 		}
 	}
 	
@@ -210,6 +269,7 @@ class PlayState extends FlxState
 		if (E.alive && E.exists && Play.alive && Play.exists)
 		{
 			Play.hurt(1);
+			_playerStats[Play.playerNumber].updateLives(Reg.players[Play.playerNumber].lives);
 		}
 	}
 	
@@ -230,5 +290,7 @@ class PlayState extends FlxState
 		e = new Enemy();
 		e.reset(X, Y);
 		_grpEnemies.add(e);
+		var _m:FlxPoint = e.getMidpoint();
+		addExplosion(_m.x, _m.y, HURTS_NONE);
 	}
 }

@@ -24,7 +24,7 @@ class Enemy extends FlxSpriteGroup implements IEnemy
 		super();
 		
 		_body = new BossSegment(0, 0);
-		_body.makeGraphic(10, 10, FlxColor.BLACK);
+		_body.makeGraphic(10, 10, FlxColor.PURPLE);
 		_body.hurtCallback = hurt;
 		add(_body);
 		maxVelocity.x = MAX_X_SPEED;
