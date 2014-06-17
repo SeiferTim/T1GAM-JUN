@@ -16,7 +16,7 @@ class PlayerSprite extends FlxSprite
 	// constant movement values
 	// these are 'based on' pixels per frame * framerate.
 	private static var MAX_X_SPEED:Float =   1.76 	* Reg.FRAMERATE;
-	private static var GRAVITY:Float = 		  .64 	* Reg.FRAMERATE;
+	private static var GRAVITY:Float = 		  .32 	* Reg.FRAMERATE;
 	private static var MAX_GRAV:Float = 	 7.00	* Reg.FRAMERATE;
 	private static var JUMP_POWER:Float = 	-4.192 	* Reg.FRAMERATE;
 	private static var JUMP_MIN:Float = 	-2.31 	* Reg.FRAMERATE;

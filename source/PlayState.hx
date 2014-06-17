@@ -238,7 +238,7 @@ class PlayState extends FlxState
 	
 	private function explosionHitsPlayer(P:PlayerSprite, E:ExplosionCloud):Void
 	{
-		if (P.alive && P.exists && E.alive && E.exists && E.parent.hurts == HURTS_ENEMY)
+		if (P.alive && P.exists && E.alive && E.exists && E.parent.hurts == HURTS_PLAYER)
 		{
 			P.hurt(1);
 			_playerStats[P.playerNumber].updateLives(Reg.players[P.playerNumber].lives);
