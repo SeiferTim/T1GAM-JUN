@@ -189,11 +189,47 @@ class GameControls
 		if (!canInteract)
 			return;
 			
+		
+		
+		
 		for (i in 0...12)
 		{
+			
 			inputs[PlayerNo][PRESSED][i] = anyKeyPressed(PlayerNo, i) || anyButtonPressed(PlayerNo, i);
+			
 			inputs[PlayerNo][JUSTPRESSED][i] = anyKeyJustPressed(PlayerNo, i) || anyButtonJustPressed(PlayerNo, i) ;
 			inputs[PlayerNo][JUSTRELEASED][i] = anyKeyJustReleased(PlayerNo, i) || anyButtonJustReleased(PlayerNo, i);
+			
+			
+		}
+		
+		var g:FlxGamepad = FlxG.gamepads.getByID(PlayerNo);
+		if (g != null)
+		{
+			var xAxisValue = g.getXAxis(LogitechButtonID.LEFT_ANALOGUE_X);
+			var yAxisValue = g.getYAxis(LogitechButtonID.LEFT_ANALOGUE_Y);
+			
+			var _pressingUp:Bool = yAxisValue < 0;
+			var _pressingDown:Bool = yAxisValue > 0;
+			var _pressingLeft:Bool = xAxisValue < 0;
+			var _pressingRight:Bool = xAxisValue > 0;
+				
+			
+			#if !flash
+			_pressingLeft = _pressingLeft || FlxG.gamepads.getByID(PlayerNo).dpadLeft;
+			_pressingRight = _pressingRight || FlxG.gamepads.getByID(PlayerNo).dpadRight;
+			_pressingUp = _pressingUp || FlxG.gamepads.getByID(PlayerNo).dpadUp;
+			_pressingDown = _pressingDown || FlxG.gamepads.getByID(PlayerNo).dpadDown;
+			#end
+		
+			inputs[PlayerNo][PRESSED][LEFT] = inputs[PlayerNo][PRESSED][LEFT] || _pressingLeft; 
+			inputs[PlayerNo][PRESSED][RIGHT] = inputs[PlayerNo][PRESSED][RIGHT] || _pressingRight; 
+			inputs[PlayerNo][PRESSED][UP] = inputs[PlayerNo][PRESSED][UP] || _pressingUp; 
+			inputs[PlayerNo][PRESSED][DOWN] = inputs[PlayerNo][PRESSED][DOWN] || _pressingDown; 
+			inputs[PlayerNo][PRESSED][SELLEFT] = inputs[PlayerNo][PRESSED][SELLEFT] || _pressingLeft || _pressingUp; 
+			inputs[PlayerNo][PRESSED][SELRIGHT] = inputs[PlayerNo][PRESSED][SELRIGHT] || _pressingDown || _pressingRight;
+			inputs[PlayerNo][PRESSED][ANY] = inputs[PlayerNo][PRESSED][ANY] || _pressingDown || _pressingRight || _pressingLeft || _pressingUp; 
+			
 		}
 	}
 	

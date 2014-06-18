@@ -296,8 +296,12 @@ class PlayState extends FlxState
 	
 	public function startMusic():Void
 	{
+		#if flash
 		FlxG.sound.playMusic(AssetPaths.Boss_Music_Intro__mp3, 1, false);
 		FlxG.sound.music.onComplete = function() { FlxG.sound.playMusic(AssetPaths.Boss_Music__mp3); };
-		
+		#else
+		FlxG.sound.playMusic(AssetPaths.Boss_Music_Intro__ogg, 1, false);
+		FlxG.sound.music.onComplete = function() { FlxG.sound.playMusic(AssetPaths.Boss_Music__ogg); };
+		#end
 	}
 }

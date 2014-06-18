@@ -70,7 +70,7 @@ class NewGameState extends FlxUIState
 			return;
 		}
 		
-		for (i in 0...3)
+		for (i in 0...4)
 		{
 			GameControls.checkInputs(i);
 			if (_players[i])
