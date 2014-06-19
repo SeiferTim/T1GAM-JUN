@@ -9,6 +9,7 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxSignal;
 import flixel.util.FlxTimer;
+using flixel.util.FlxSpriteUtil;
 
 class PlayerSprite extends FlxSprite
 {
@@ -20,6 +21,7 @@ class PlayerSprite extends FlxSprite
 	private static var MAX_GRAV:Float = 	 7.00	* Reg.FRAMERATE;
 	private static var JUMP_POWER:Float = 	-4.192 	* Reg.FRAMERATE;
 	private static var JUMP_MIN:Float = 	-2.31 	* Reg.FRAMERATE;
+	private static var MIN_JUMP_TIME:Float =  .6;
 	private static var ACCELERATION:Float =   .4 	* Reg.FRAMERATE;
 	private static var DECELERATION:Float =   .8 	* Reg.FRAMERATE;
 	private static var BULLET_SPEED:Float =  5.00	* Reg.FRAMERATE;
@@ -35,6 +37,7 @@ class PlayerSprite extends FlxSprite
 	private var _didDoubleJump:Bool = false;
 	private var _spawningTimer:Float = 0;
 	private var _ptSpawn:FlxPoint;
+	private var _firstSpawn:Bool = true;
 	
 	public function new(X:Float=0, Y:Float=0, PlayerNumber:Int, Character:Int) 
 	{
@@ -63,9 +66,28 @@ class PlayerSprite extends FlxSprite
 		{
 			if (_spawningTimer <= 0)
 			{
-				health = 1;
+				
 				_spawningTimer++;
-				FlxTween.num(0, 1, .66, { ease:FlxEase.circInOut, startDelay:.66, complete:finishSpawn }, set_alpha);
+				if (_firstSpawn)
+					FlxTween.num(0, 1, 1, { ease:FlxEase.sineIn, startDelay:1, complete:finishSpawn }, set_alpha);
+				else
+					FlxTween.num(0, .6, 1, { ease:FlxEase.sineIn, startDelay:1, complete:finishSpawn }, set_alpha);
+			}
+			else if (isFlickering() && _spawningTimer == 1)
+			{
+				GameControls.checkInputs(playerNumber);
+				if (GameControls.getInput(playerNumber, GameControls.PRESSED, GameControls.SELECT))
+				{
+					
+					alpha = 1;
+					_spawningTimer++;
+					health = 1;
+					stopFlickering();
+					alive = true;
+					Reg.currentPlayState.addExplosion(x + (width / 2), y + height, PlayState.HURTS_ENEMYBULLET | PlayState.HURTS_ENEMY);
+					
+				}
+				
 			}
 		}
 		else if(alive)
@@ -77,7 +99,15 @@ class PlayerSprite extends FlxSprite
 	
 	private function finishSpawn(_):Void
 	{
-		alive = true;
+		if (_firstSpawn)
+		{
+			_firstSpawn = false;
+			_spawningTimer++;
+			health = 1;
+			alive = true;
+		}
+		else
+			flicker(0, .1, true, false);
 	}
 	
 	private function movement():Void
@@ -192,8 +222,12 @@ class PlayerSprite extends FlxSprite
 		{
 			_doubleJumpReady = true;
 		}
-			
-		if (_jump && (_jumpTimer < 1 || _doubleJumpReady))
+		if (!_jump && (_jumpTimer > 0 && _jumpTimer < MIN_JUMP_TIME))
+		{
+			velocity.y = JUMP_POWER * .6;
+			_jumpTimer += FlxG.elapsed * 7;
+		}
+		else if (_jump && (_jumpTimer < 1 || _doubleJumpReady))
 		{
 			_jumpTimer += FlxG.elapsed * 7;
 			if (_doubleJumpReady && !_didDoubleJump)
@@ -211,12 +245,14 @@ class PlayerSprite extends FlxSprite
 		else if (!_jump)
 		{
 			_jumpTimer = 1;
+			if (velocity.y < JUMP_MIN)
+			{
+				velocity.y = 0;
+			}
 		}
 		
-		if ((!_jump && velocity.y < JUMP_MIN))
-		{
-			velocity.y = 0;
-		}
+		/**/
+		
 	
 		// SHOOTING
 		

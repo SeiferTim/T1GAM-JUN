@@ -289,18 +289,20 @@ class Boss extends FlxSpriteGroup
 			else
 			{
 				_actTimer++;
-				_fireAngle = 10;
+				_fireAngle = 0;
 				var _traj:FlxPoint = FlxPoint.get(100, 0);
 				_point = FlxPoint.get(0, 0);
 				
-				_traj.rotate(_point, -225);
-				for (i in 0...30)
+				while (_fireAngle < 360)
 				{
+					_traj = FlxAngle.getCartesianCoords(100, _fireAngle);
 					Reg.currentPlayState.fireEnemyBullet(_head.x + 10, _head.y + 10, _traj.x, _traj.y);
-					_traj.rotate(_point, FlxAngle.wrapAngle(_fireAngle));
+					_fireAngle += 360 / 36;
 				}
+				
 				_traj.put();
 				_shootTimer = 0;
+				
 			}
 		}
 		else

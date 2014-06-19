@@ -56,4 +56,10 @@ class BossSegment extends FlxSprite
 		flash();
 		hurtCallback(Damage * damageMod);
 	}
+	
+	override public function kill():Void 
+	{
+		finishFlash(null);
+		super.kill();
+	}
 }

@@ -13,6 +13,7 @@ import flixel.ui.FlxButton;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import flixel.util.FlxSignal;
+import haxe.EnumFlags;
 using flixel.util.FlxArrayUtil;
 using flixel.math.FlxRandom;
 
@@ -21,11 +22,11 @@ using flixel.math.FlxRandom;
  */
 class PlayState extends FlxState
 {
-	
-	public static inline var HURTS_NONE:Int = 0x00;
-	public static inline var HURTS_PLAYER:Int = 0x01;
-	public static inline var HURTS_ENEMY:Int = 0x10;
-	public static inline var HURTS_ANY:Int = 0x11;
+	public static inline var HURTS_NONE:Int = 0x000;
+	public static inline var HURTS_PLAYER:Int = 0x001;
+	public static inline var HURTS_ENEMY:Int = 0x010;
+	public static inline var HURTS_ANY:Int = 0x111;
+	public static inline var HURTS_ENEMYBULLET:Int = 0x100;
 	
 	private var _players:Array<Bool>;
 	public var playerSprites:Array<PlayerSprite>;
@@ -49,7 +50,7 @@ class PlayState extends FlxState
 		super();
 		
 		bgColor = 0xff333333;
-		
+
 		_players = [false, false, false, false];
 		for (i in 0...4)
 		{
@@ -81,7 +82,7 @@ class PlayState extends FlxState
 		_grpPlayers = new FlxTypedGroup<PlayerSprite>(4);
 		
 		_boss = new Boss();
-		_boss.setPosition(170, 110);
+		_boss.setPosition(170, 100);
 		add(_boss);
 		
 		_grpEnemies = new FlxTypedGroup<Enemy>();
@@ -202,6 +203,9 @@ class PlayState extends FlxState
 		FlxG.collide(_room.walls, _grpEnemies);
 		FlxG.overlap(_boss, _grpExplosions, explosionHitsBoss);
 		FlxG.overlap(_grpEnemies, _grpExplosions, explosionHitsEnemy);
+		FlxG.overlap(_grpEnemyBullets, _grpExplosions, explosionHitEnemyBullet);
+		FlxG.overlap(_grpExplosions, _grpExplosions, explosionHitExplosion);
+		
 		for (i in 0...4)
 		{
 			if (_grpPlayerBullets[i] != null)
@@ -220,9 +224,34 @@ class PlayState extends FlxState
 		
 	}	
 	
+	private function explosionHitEnemyBullet(B:Bullet, E:ExplosionCloud):Void
+	{
+		if (B.alive && B.exists && E.alive && E.exists && (E.parent.hurts & HURTS_ENEMYBULLET) != 0)
+		{
+			B.kill();
+		}
+	}
+	
+	private function explosionHitExplosion(EA:ExplosionCloud, EB:ExplosionCloud):Void
+	{
+		if (EA.alive && EA.exists && EB.alive && EB.exists)
+		{
+			if ((EB.parent.hurts & HURTS_ENEMYBULLET) != 0 && (EA.parent.hurts & HURTS_PLAYER) != 0)
+			{
+				EA.kill();
+			}
+			else if ((EA.parent.hurts & HURTS_ENEMYBULLET) != 0 && (EB.parent.hurts & HURTS_PLAYER) != 0)
+			{
+				EB.kill();
+			}
+		}
+
+		
+	}
+	
 	private function explosionHitsBoss(B:BossSegment, E:ExplosionCloud):Void
 	{
-		if (B.alive && B.exists && _boss.vulnerable && E.alive && E.exists && E.parent.hurts == HURTS_ENEMY)
+		if (B.alive && B.exists && _boss.vulnerable && E.alive && E.exists && (E.parent.hurts & HURTS_ENEMY) != 0)
 		{
 			B.hurt(1);
 		}
@@ -230,7 +259,7 @@ class PlayState extends FlxState
 	
 	private function explosionHitsEnemy(B:BossSegment, E:ExplosionCloud):Void
 	{
-		if (B.alive && B.exists && E.alive && E.exists && E.parent.hurts == HURTS_ENEMY)
+		if (B.alive && B.exists && E.alive && E.exists && (E.parent.hurts & HURTS_ENEMY) != 0)
 		{
 			B.hurt(1);
 		}
@@ -238,7 +267,7 @@ class PlayState extends FlxState
 	
 	private function explosionHitsPlayer(P:PlayerSprite, E:ExplosionCloud):Void
 	{
-		if (P.alive && P.exists && E.alive && E.exists && E.parent.hurts == HURTS_PLAYER)
+		if (P.alive && P.exists && E.alive && E.exists && (E.parent.hurts & HURTS_PLAYER) != 0)
 		{
 			P.hurt(1);
 			_playerStats[P.playerNumber].updateLives(Reg.players[P.playerNumber].lives);

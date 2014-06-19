@@ -30,6 +30,7 @@ class Bullet extends FlxSprite
 		}
 		
 		reset(X-(width/2), Y-(height/2));
+		//reset(X, Y);
 		setFacingFlip(FlxObject.LEFT, false, false);
 		setFacingFlip(FlxObject.RIGHT, true, false);
 		
