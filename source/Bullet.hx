@@ -1,10 +1,12 @@
 package ;
+import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRandom;
 import flixel.util.FlxColor;
+import openfl.geom.ColorTransform;
 using flixel.math.FlxVelocity;
 
 class Bullet extends FlxSprite
@@ -17,6 +19,8 @@ class Bullet extends FlxSprite
 	
 	public var style:Int = PLAYER_BULLET;
 	private var _target:PlayerSprite;
+	private var _turnTimer:Float = 0;
+	
 	
 	public function fire(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, Style:Int = PLAYER_BULLET, ?Target:PlayerSprite):Void
 	{
@@ -38,9 +42,9 @@ class Bullet extends FlxSprite
 				var size:Int = FlxRandom.int(2, 10);
 				makeGraphic(size, size, FlxColor.ORANGE);
 				health = 60;
-				drag.set(20,20);
+				drag.set(20, 20);
 		}
-		
+		_turnTimer = 0;
 		reset(X-(width/2), Y-(height/2));
 		setFacingFlip(FlxObject.LEFT, false, false);
 		setFacingFlip(FlxObject.RIGHT, true, false);
@@ -91,18 +95,24 @@ class Bullet extends FlxSprite
 				pop();
 			}
 			health--;
-			moveTowardsObject(_target, 100);
+			if (_turnTimer <=0)
+			{
+				moveTowardsObject(_target, 80);
+				_turnTimer = 1;
+			}
+			else
+				_turnTimer -= FlxG.elapsed * 8;
 		}
 		else if (style == ENEMY_FIRE)
 		{
 			health--;
 			if (health == 40)
-				drag.set(100, 100);
+				drag.set(80, 80);
 			else if (health <= 0)
 				kill();
 			if (health < 10)
 			{
-				alpha = health * .1;
+				alpha = health * .1 * 2;
 			}
 		}
 		

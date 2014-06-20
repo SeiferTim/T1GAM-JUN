@@ -37,7 +37,7 @@ class Enemy extends FlxSpriteGroup implements IEnemy
 		health = 2;
 		facing = FlxRandom.chanceRoll() ? FlxObject.LEFT : FlxObject.RIGHT;
 		_hopTimer = 0;
-		_hopDelay = FlxRandom.int(0,6);
+		_hopDelay = FlxRandom.int(1,6);
 	}
 	
 	override public function update():Void
@@ -61,19 +61,7 @@ class Enemy extends FlxSpriteGroup implements IEnemy
 		velocity.y += GRAVITY;
 		if (velocity.y > MAX_GRAV)
 			velocity.y = MAX_GRAV;
-			
-		/*_hopTimer += FlxG.elapsed * 7;
-		if (_hopTimer >= 0)// && _hopTimer < 1)
-		{
-			if (onGround || _hopTimer > 0)
-			{
-				velocity.y = JUMP_POWER;
-			}
-		}
-		else if (_hopTimer >= 1)
-		{
-			_hopTimer = -3;
-		}*/
+
 		if (_hopDelay > 0)
 			_hopDelay -= FlxG.elapsed * 7;
 		if ((_hopTimer > 0 || (_hopTimer == 0 && onGround)) && _hopTimer < 1 && _hopDelay <= 0)

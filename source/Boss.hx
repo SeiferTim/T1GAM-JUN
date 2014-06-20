@@ -284,6 +284,7 @@ class Boss extends FlxSpriteGroup
 	
 	public function phaseTwo():Void
 	{
+		// circle of bullets
 		if (_shootTimer > 1)
 		{
 			
@@ -318,9 +319,10 @@ class Boss extends FlxSpriteGroup
 	
 	public function phaseThree():Void
 	{
+		// small imps
 		if (_actTimer > 1)
 		{
-			if (_shootTimer < 3)
+			if (_shootTimer < 2 * healthRatio())
 			{
 				
 				Reg.currentPlayState.enemySpawns.shuffleArray(10);
@@ -356,9 +358,27 @@ class Boss extends FlxSpriteGroup
 		//_phase = 
 	}
 	
+	private function healthRatio():Int
+	{
+		// 1.00 = 1;
+		//  .75 = 2;
+		//  .50 = 3;
+		//  .25 = 4;
+		var h:Float = health / _maxHealth;
+		if (h < .25)
+			return 3;
+		else if (h < .5)
+			return 2;
+		else
+			return 1;
+		
+		
+	}
+	
 	public function phaseFour():Void
 	{
-		if (_actTimer == 0)
+		// homing missles
+		if (_actTimer < healthRatio())
 		{
 			if (_shootTimer > 1)
 			{
@@ -372,22 +392,22 @@ class Boss extends FlxSpriteGroup
 				}
 			}
 			else
-				_shootTimer += FlxG.elapsed * 4;
+				_shootTimer += FlxG.elapsed * .33;
 		}
-		else if (_actTimer == 1)
+		else
 		{
 			if (_shootTimer > 1)
 			{
 				switchPhase();
 			}
 			else
-				_shootTimer += FlxG.elapsed;
+				_shootTimer += FlxG.elapsed * .66;
 		}
 	}
 	
 	public function phaseFive():Void
 	{
-		alpha = .2;
+		// flamethrower
 		if (_fireAngle == -400)
 			_fireAngle = FlxAngle.wrapAngle(140);
 		
@@ -398,9 +418,22 @@ class Boss extends FlxSpriteGroup
 		
 		for (i in 0..._times)
 		{
-			_traj = FlxAngle.getCartesianCoords(100, FlxRandom.float(_fireAngle -8, _fireAngle+8));
+			_traj = FlxAngle.getCartesianCoords(100, FlxRandom.float(_fireAngle - 40, _fireAngle + 40));
 			Reg.currentPlayState.fireEnemyBullet(_body.x + 30 +_start.x, _body.y + 30 + _start.y, _traj.x, _traj.y,Bullet.ENEMY_FIRE);
+		}
+		
+		if (healthRatio() >= 2)
+		{
+			_times = FlxRandom.int(1, 3);
+			var tmpStart:FlxPoint = FlxAngle.getCartesianCoords(60, 180 - _fireAngle);
+			var tmpTraj:FlxPoint;
 			
+			for (i in 0..._times)
+			{	
+				tmpTraj = FlxAngle.getCartesianCoords(100, FlxRandom.float(180 - _fireAngle - 40, 180 - _fireAngle + 40));
+				Reg.currentPlayState.fireEnemyBullet(_body.x + 30 + tmpStart.x, _body.y + 30 + tmpStart.y, tmpTraj.x, tmpTraj.y, Bullet.ENEMY_FIRE);
+			}
+
 		}
 		
 		_fireAngle = FlxAngle.wrapAngle(_fireAngle + (FlxG.elapsed * 40 * _fireDir));
@@ -413,7 +446,7 @@ class Boss extends FlxSpriteGroup
 		{
 			switchPhase();
 		}
-		
+
 		
 		
 	}
