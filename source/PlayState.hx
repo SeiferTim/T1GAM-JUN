@@ -165,15 +165,15 @@ class PlayState extends FlxState
 		_grpExplosions.add(e);
 	}
 	
-	public function fireEnemyBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, PlayerTarget:Int=-1):Void
+	public function fireEnemyBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, BulletType:Int, PlayerTarget:Int=-1):Void
 	{
 		var b:Bullet = _grpEnemyBullets.recycle();
 		if (b == null)
 			b = new Bullet();
 		if (PlayerTarget == -1)
-			b.fire(X, Y, VelocityX, VelocityY, Bullet.ENEMY_BULLET);
+			b.fire(X, Y, VelocityX, VelocityY, BulletType);
 		else
-			b.fire(X, Y, VelocityX, VelocityY, Bullet.ENEMY_TRACKING, playerSprites[PlayerTarget]);
+			b.fire(X, Y, VelocityX, VelocityY, BulletType, playerSprites[PlayerTarget]);
 		_grpEnemyBullets.add(b);
 	}
 	

@@ -20,7 +20,7 @@ class PlayerSprite extends FlxSprite
 	private static var GRAVITY:Float = 		  .32 	* Reg.FRAMERATE;
 	private static var MAX_GRAV:Float = 	 7.00	* Reg.FRAMERATE;
 	private static var JUMP_POWER:Float = 	-4.192 	* Reg.FRAMERATE;
-	private static var JUMP_MIN:Float = 	-2.31 	* Reg.FRAMERATE;
+	private static var JUMP_MIN:Float = 	-1.31 	* Reg.FRAMERATE;
 	private static var MIN_JUMP_TIME:Float =  .6;
 	private static var ACCELERATION:Float =   .4 	* Reg.FRAMERATE;
 	private static var DECELERATION:Float =   .8 	* Reg.FRAMERATE;
@@ -218,16 +218,16 @@ class PlayerSprite extends FlxSprite
 			velocity.y = MAX_GRAV;
 		
 		
-		if (!_jump && !_didDoubleJump && _jumpTimer > FlxG.elapsed * 6)
+		if (!_jump && !_didDoubleJump && _jumpTimer > MIN_JUMP_TIME)
 		{
 			_doubleJumpReady = true;
 		}
-		if (!_jump && (_jumpTimer > 0 && _jumpTimer < MIN_JUMP_TIME))
+		if (!_jump && (_jumpTimer > 0 && (_jumpTimer < MIN_JUMP_TIME || (_didDoubleJump && _jumpTimer < 1))))
 		{
 			velocity.y = JUMP_POWER * .6;
 			_jumpTimer += FlxG.elapsed * 7;
 		}
-		else if (_jump && (_jumpTimer < 1 || _doubleJumpReady))
+		else if (_jump && (_jumpTimer < MIN_JUMP_TIME * 2 || _doubleJumpReady))
 		{
 			_jumpTimer += FlxG.elapsed * 7;
 			if (_doubleJumpReady && !_didDoubleJump)
@@ -244,7 +244,7 @@ class PlayerSprite extends FlxSprite
 		}
 		else if (!_jump)
 		{
-			_jumpTimer = 1;
+			_jumpTimer = 5;
 			if (velocity.y < JUMP_MIN)
 			{
 				velocity.y = 0;

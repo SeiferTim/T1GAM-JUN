@@ -22,7 +22,7 @@ class Boss extends FlxSpriteGroup
 	private var _hands:Array<BossSegment>;
 	private var _actTimer:Float = 0;
 	private var _shootTimer:Float = 0;
-	private var _fireAngle:Float = 0;
+	//private var _fireAngle:Float = 0;
 	public var vulnerable(default, null):Bool;
 	private var _laughTimes:Int = 0;
 	private var _laughDone:Bool = false;
@@ -40,6 +40,8 @@ class Boss extends FlxSpriteGroup
 	//private var _phases:Array<Int>;
 	
 	private var _maxHealth:Int = 0;
+	private var _fireAngle:Float = -400;
+	private var _fireDir:Int = 1;
 	
 	
 	public function new() 
@@ -80,6 +82,8 @@ class Boss extends FlxSpriteGroup
 		_handsPos = [FlxPoint.get( -8, 22), FlxPoint.get(52, 22)];
 
 		alpha = 0;
+		
+		FlxG.watch.add(this, "_fireAngle");
 		
 		//_phases = [2, 3, 4];
 		
@@ -154,7 +158,8 @@ class Boss extends FlxSpriteGroup
 				phaseThree();
 			case 4:
 				phaseFour();
-			
+			case 5:
+				phaseFive();
 				
 				
 		}
@@ -296,7 +301,7 @@ class Boss extends FlxSpriteGroup
 				while (_fireAngle < 360)
 				{
 					_traj = FlxAngle.getCartesianCoords(100, _fireAngle);
-					Reg.currentPlayState.fireEnemyBullet(_head.x + 10, _head.y + 10, _traj.x, _traj.y);
+					Reg.currentPlayState.fireEnemyBullet(_head.x + 10, _head.y + 10, _traj.x, _traj.y, Bullet.ENEMY_BULLET);
 					_fireAngle += 360 / 36;
 				}
 				
@@ -344,7 +349,10 @@ class Boss extends FlxSpriteGroup
 	{
 		_actTimer = 0;
 		_shootTimer = 0;
-		_phase = FlxRandom.int(2, 4, [_phase]);
+		_fireAngle = -400;
+		_fireDir = 1;
+		_phase = FlxRandom.int(2, 5, [_phase]);
+		
 		//_phase = 
 	}
 	
@@ -360,7 +368,7 @@ class Boss extends FlxSpriteGroup
 				for (i in 0...Reg.playerCount)
 				{
 					if (Reg.currentPlayState.playerSprites[i].alive)
-						Reg.currentPlayState.fireEnemyBullet(_head.x + 10, _head.y + 10, 0, 0, i);
+						Reg.currentPlayState.fireEnemyBullet(_head.x + 10, _head.y + 10, 0, 0,Bullet.ENEMY_TRACKING, i);
 				}
 			}
 			else
@@ -377,6 +385,38 @@ class Boss extends FlxSpriteGroup
 		}
 	}
 	
+	public function phaseFive():Void
+	{
+		alpha = .2;
+		if (_fireAngle == -400)
+			_fireAngle = FlxAngle.wrapAngle(140);
+		
+		var _times:Int = FlxRandom.int(1, 3);
+		
+		var _start:FlxPoint = FlxAngle.getCartesianCoords(60, _fireAngle);
+		var _traj:FlxPoint;// = FlxPoint.get(0, 100);
+		
+		for (i in 0..._times)
+		{
+			_traj = FlxAngle.getCartesianCoords(100, FlxRandom.float(_fireAngle -8, _fireAngle+8));
+			Reg.currentPlayState.fireEnemyBullet(_body.x + 30 +_start.x, _body.y + 30 + _start.y, _traj.x, _traj.y,Bullet.ENEMY_FIRE);
+			
+		}
+		
+		_fireAngle = FlxAngle.wrapAngle(_fireAngle + (FlxG.elapsed * 40 * _fireDir));
+		if ((_fireDir == 1 && _fireAngle > 40 && _fireAngle < 140) || (_fireDir == -1 && _fireAngle < 140 && _fireAngle > 40))
+		{
+			_shootTimer++;
+			_fireDir *= -1;
+		}
+		if (_shootTimer >= 2)
+		{
+			switchPhase();
+		}
+		
+		
+		
+	}
 	
 	
 }
