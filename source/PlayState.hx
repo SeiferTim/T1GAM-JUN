@@ -42,6 +42,7 @@ class PlayState extends FlxState
 	private var _playerStats:Array<PlayerStat>;
 	private var _grpHUD:FlxGroup;
 	private var _grpExplosions:FlxTypedGroup<Explosion>;
+	private var _grpSignals:FlxTypedGroup<Signal>;
 	
 	
 		
@@ -128,6 +129,8 @@ class PlayState extends FlxState
 		barBossHealth.alpha = 0;
 		_grpHUD.add(barBossHealth);
 		
+		_grpSignals = new FlxTypedGroup<Signal>();
+		add(_grpSignals);
 		
 		add(_grpHUD);
 		Reg.currentPlayState = this;
@@ -321,6 +324,31 @@ class PlayState extends FlxState
 		_grpEnemies.add(e);
 		var _m:FlxPoint = e.getMidpoint();
 		addExplosion(_m.x, _m.y, HURTS_NONE);
+	}
+
+	public function startEnemySpawn():Void
+	{
+		
+		var spawns:Array<FlxPoint> = enemySpawns.shuffleArray(10);
+		var s:Signal;
+		
+		for (i in 0...Reg.playerCount)
+		{
+			if (playerSprites[i].alive)
+			{
+				s = _grpSignals.recycle();
+				if (s == null)
+				{
+					s = new Signal();
+				}
+				s.startSpawn(spawns[i], 0);
+				_grpSignals.add(s);
+			}
+			
+				//spawnEnemy(0, Reg.currentPlayState.enemySpawns[i].x, Reg.currentPlayState.enemySpawns[i].y);
+				
+			
+		}
 	}
 	
 	public function startMusic():Void

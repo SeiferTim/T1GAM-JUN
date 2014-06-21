@@ -6,6 +6,7 @@ import flixel.addons.ui.MultiKey;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
+import flixel.input.keyboard.FlxKey;
 import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.math.FlxMath;
@@ -28,9 +29,9 @@ class MenuState extends FlxUIState
 		_xml_id = "state_menu";
 		
 		cursor = new FlxUICursor(onCursorEvent, FlxUICursor.INPUT_KEYS | FlxUICursor.INPUT_GAMEPAD, FlxUICursor.KEYS_DEFAULT_ARROWS | FlxUICursor.KEYS_DEFAULT_TAB | FlxUICursor.KEYS_DEFAULT_WASD);
-		cursor.keysClick.push(new MultiKey(FlxG.keys.getKeyCode("X")));
-		cursor.keysClick.push(new MultiKey(FlxG.keys.getKeyCode("C")));
-		cursor.keysClick.push(new MultiKey(FlxG.keys.getKeyCode("P")));
+		cursor.keysClick.push(new MultiKey(FlxKey.X));
+		cursor.keysClick.push(new MultiKey(FlxKey.C));
+		cursor.keysClick.push(new MultiKey(FlxKey.P));
 		super.create();
 		
 	}

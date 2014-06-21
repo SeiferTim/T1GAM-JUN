@@ -3,6 +3,7 @@ import flixel.FlxG;
 import flixel.input.FlxInput.FlxInputState;
 import flixel.input.gamepad.FlxGamepad;
 import flixel.input.gamepad.LogitechButtonID;
+import flixel.input.keyboard.FlxKey;
 using flixel.util.FlxArrayUtil;
 
 class GameControls
@@ -41,8 +42,8 @@ class GameControls
 	public static var  canInteract:Bool = false;
 	
 	#if !FLX_NO_KEYBOAD
-	public static var keys:Array<Array<Array<String>>>;
-	private static var _defaultKeys:Array<Array<Array<String>>>;
+	public static var keys:Array<Array<Array<FlxKey>>>;
+	private static var _defaultKeys:Array<Array<Array<FlxKey>>>;
 	#end
 	
 	#if !FLX_NO_GAMEPAD
@@ -200,8 +201,8 @@ class GameControls
 		var g:FlxGamepad = FlxG.gamepads.getByID(PlayerNo);
 		if (g != null)
 		{
-			var xAxisValue = g.getXAxis(LogitechButtonID.LEFT_ANALOGUE_X);
-			var yAxisValue = g.getYAxis(LogitechButtonID.LEFT_ANALOGUE_Y);
+			var xAxisValue = g.getXAxis(LogitechButtonID.LEFT_ANALOG_STICK);
+			var yAxisValue = g.getYAxis(LogitechButtonID.LEFT_ANALOG_STICK);
 			
 			var _pressingUp:Bool = yAxisValue < 0;
 			var _pressingDown:Bool = yAxisValue > 0;

@@ -224,7 +224,10 @@ class PlayerSprite extends FlxSprite
 		}
 		if (!_jump && (_jumpTimer > 0 && (_jumpTimer < MIN_JUMP_TIME || (_didDoubleJump && _jumpTimer < 1))))
 		{
-			velocity.y = JUMP_POWER * .6;
+			if (_didDoubleJump)
+				velocity.y = JUMP_POWER * .3;
+			else
+				velocity.y = JUMP_POWER * .6;
 			_jumpTimer += FlxG.elapsed * 7;
 		}
 		else if (_jump && (_jumpTimer < MIN_JUMP_TIME * 2 || _doubleJumpReady))

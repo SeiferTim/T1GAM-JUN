@@ -325,13 +325,7 @@ class Boss extends FlxSpriteGroup
 			if (_shootTimer < 2 * healthRatio())
 			{
 				
-				Reg.currentPlayState.enemySpawns.shuffleArray(10);
-				
-				for (i in 0...Reg.playerCount)
-				{
-					if (Reg.currentPlayState.playerSprites[i].alive)
-						Reg.currentPlayState.spawnEnemy(0, Reg.currentPlayState.enemySpawns[i].x, Reg.currentPlayState.enemySpawns[i].y);
-				}
+				Reg.currentPlayState.startEnemySpawn();
 				
 				_shootTimer++;
 				_actTimer = 0;

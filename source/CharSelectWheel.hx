@@ -24,6 +24,7 @@ class CharSelectWheel extends FlxTypedSpriteGroup<FlxSprite>
 	private var _txtReady:FlxText;
 	public var locked:Bool = false;
 	public var unavailable:Array<Bool>;
+	private var _sprLockOut:FlxSprite;
 	
 	
 	public function new(X:Int, Y:Int) 
@@ -36,6 +37,10 @@ class CharSelectWheel extends FlxTypedSpriteGroup<FlxSprite>
 		_sprDisplay.pixels.copyPixels(_sprDisabled.pixels, _sprDisabled.pixels.rect, _sprDisplay._flashPointZero);
 		_sprDisplay.dirty = true;
 		add(_sprDisplay);
+		
+		_sprLockOut = new FlxSprite(0, 0).makeGraphic(80, 200, FlxColor.GRAY);
+		_sprLockOut.alpha = 0;
+		add(_sprLockOut);
 		
 		_txtPressKey = new FlxText(0, 0, 80, "Join", 22);
 		_txtPressKey.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1, 1);
@@ -67,20 +72,46 @@ class CharSelectWheel extends FlxTypedSpriteGroup<FlxSprite>
 		
 	}
 	
-	public function lock():Void
+	public function lock():Bool
 	{
 		if (locked || !_activated)
-			return;
+			return false;
 		if (unavailable[selectedItem])
 		{
 			// do something?
-			return;
+			return false;
 		}
 		_txtReady.visible = true;
 		_txtReady.active = true;
 		locked = true;
 		FlxTween.num(0, 1, .6, {ease: FlxEase.circOut}, updateReadyFade);
+		return true;
+	}
+	
+	override public function update():Void 
+	{
 		
+		if (unavailable[selectedItem] && _sprLockOut.alpha == 0)
+		{
+			showLockOut();
+			
+		}
+		else if (!unavailable[selectedItem] && _sprLockOut.alpha == .8)
+		{
+			hideLockOut();
+		}
+		
+		super.update();
+	}
+	
+	private function showLockOut():Void
+	{
+		FlxTween.num(0, .8, .2, { ease:FlxEase.circInOut }, _sprLockOut.set_alpha);
+	}
+	
+	private function hideLockOut():Void
+	{
+		FlxTween.num(.8, 0, .2, { ease:FlxEase.circInOut }, _sprLockOut.set_alpha);
 	}
 	
 	
