@@ -23,6 +23,7 @@ class CharSelectWheel extends FlxTypedSpriteGroup<FlxSprite>
 	private var _activated:Bool = false;
 	private var _txtReady:FlxText;
 	public var locked:Bool = false;
+	public var unavailable:Array<Bool>;
 	
 	
 	public function new(X:Int, Y:Int) 
@@ -53,6 +54,8 @@ class CharSelectWheel extends FlxTypedSpriteGroup<FlxSprite>
 		_txtReady.visible = false;
 		_txtReady.active = false;
 		
+		unavailable = [false, false, false, false];
+		
 		selectedItem = -1;
 		_activated = false;
 	}
@@ -68,6 +71,11 @@ class CharSelectWheel extends FlxTypedSpriteGroup<FlxSprite>
 	{
 		if (locked || !_activated)
 			return;
+		if (unavailable[selectedItem])
+		{
+			// do something?
+			return;
+		}
 		_txtReady.visible = true;
 		_txtReady.active = true;
 		locked = true;

@@ -80,6 +80,13 @@ class NewGameState extends FlxUIState
 					if (_charWheels[i].locked)
 					{
 						_charWheels[i].unlock();
+						for (j in 0...4)
+						{
+							if (j != i)
+							{
+								_charWheels[j].unavailable[i] = false;
+							}
+						}
 					}
 					else
 					{
@@ -107,8 +114,18 @@ class NewGameState extends FlxUIState
 				{
 					if (_delays[i] <= 0)
 					{
-						_charWheels[i].lock();
-						_delays[i] = FlxG.elapsed;
+						
+						if (_charWheels[i].lock())
+						{
+							_delays[i] = FlxG.elapsed;
+							for (j in 0...4)
+							{
+								if (j != i)
+								{
+									_charWheels[j].unavailable[i] = true;
+								}
+							}
+						}
 					}
 				}
 			}
