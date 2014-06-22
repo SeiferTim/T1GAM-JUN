@@ -32,7 +32,16 @@ class Signal extends FlxSprite
 	
 	private function doneFlicker(_):Void
 	{
-		Reg.currentPlayState.spawnEnemy(_eType, _spawnPoint.x, _spawnPoint.y);
+		switch (_eType)
+		{
+			case 0:
+				Reg.currentPlayState.spawnEnemy(_eType, _spawnPoint.x, _spawnPoint.y);
+
+			case 1:
+				Reg.currentPlayState.spawnJet(_spawnPoint.x, _spawnPoint.y);
+
+		}
+		
 		kill();
 	}
 	

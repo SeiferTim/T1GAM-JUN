@@ -84,7 +84,7 @@ class NewGameState extends FlxUIState
 						{
 							if (j != i)
 							{
-								_charWheels[j].unavailable[i] = false;
+								_charWheels[j].unavailable[_charWheels[i].selectedItem] = false;
 							}
 						}
 					}
@@ -122,7 +122,7 @@ class NewGameState extends FlxUIState
 							{
 								if (j != i)
 								{
-									_charWheels[j].unavailable[i] = true;
+									_charWheels[j].unavailable[_charWheels[i].selectedItem] = true;
 								}
 							}
 						}

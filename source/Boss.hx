@@ -160,7 +160,8 @@ class Boss extends FlxSpriteGroup
 				phaseFour();
 			case 5:
 				phaseFive();
-				
+			case 6:
+				phaseSix();
 				
 		}
 	}
@@ -325,7 +326,30 @@ class Boss extends FlxSpriteGroup
 			if (_shootTimer < 2 * healthRatio())
 			{
 				
-				Reg.currentPlayState.startEnemySpawn();
+				Reg.currentPlayState.startEnemySpawn(0);
+				
+				_shootTimer++;
+				_actTimer = 0;
+			}
+			else
+			{
+				switchPhase();
+			}
+		}
+		else
+		{
+			_actTimer += FlxG.elapsed;
+		}
+	}
+	public function phaseSix():Void
+	{
+		// flame jets
+		if (_actTimer > 1)
+		{
+			if (_shootTimer < 2 * healthRatio())
+			{
+				
+				Reg.currentPlayState.startEnemySpawn(1);
 				
 				_shootTimer++;
 				_actTimer = 0;
@@ -347,7 +371,7 @@ class Boss extends FlxSpriteGroup
 		_shootTimer = 0;
 		_fireAngle = -400;
 		_fireDir = 1;
-		_phase = FlxRandom.int(2, 5, [_phase]);
+		_phase =  FlxRandom.int(2, 6, [_phase]);
 		
 		//_phase = 
 	}
@@ -405,12 +429,12 @@ class Boss extends FlxSpriteGroup
 		if (_fireAngle == -400)
 			_fireAngle = FlxAngle.wrapAngle(140);
 		
-		var _times:Int = FlxRandom.int(1, 3);
+		//var _times:Int = FlxRandom.int(1, 3);
 		
 		var _start:FlxPoint = FlxAngle.getCartesianCoords(60, _fireAngle);
 		var _traj:FlxPoint;// = FlxPoint.get(0, 100);
 		
-		for (i in 0..._times)
+		for (i in 0...3)
 		{
 			_traj = FlxAngle.getCartesianCoords(100, FlxRandom.float(_fireAngle - 40, _fireAngle + 40));
 			Reg.currentPlayState.fireEnemyBullet(_body.x + 30 +_start.x, _body.y + 30 + _start.y, _traj.x, _traj.y,Bullet.ENEMY_FIRE);
@@ -418,11 +442,11 @@ class Boss extends FlxSpriteGroup
 		
 		if (healthRatio() >= 2)
 		{
-			_times = FlxRandom.int(1, 3);
+			//_times = FlxRandom.int(1, 3);
 			var tmpStart:FlxPoint = FlxAngle.getCartesianCoords(60, 180 - _fireAngle);
 			var tmpTraj:FlxPoint;
 			
-			for (i in 0..._times)
+			for (i in 0...3)
 			{	
 				tmpTraj = FlxAngle.getCartesianCoords(100, FlxRandom.float(180 - _fireAngle - 40, 180 - _fireAngle + 40));
 				Reg.currentPlayState.fireEnemyBullet(_body.x + 30 + tmpStart.x, _body.y + 30 + tmpStart.y, tmpTraj.x, tmpTraj.y, Bullet.ENEMY_FIRE);
@@ -441,8 +465,6 @@ class Boss extends FlxSpriteGroup
 			switchPhase();
 		}
 
-		
-		
 	}
 	
 	

@@ -43,6 +43,7 @@ class PlayState extends FlxState
 	private var _grpHUD:FlxGroup;
 	private var _grpExplosions:FlxTypedGroup<Explosion>;
 	private var _grpSignals:FlxTypedGroup<Signal>;
+	private var _grpFlameJets:FlxTypedGroup<FlameJet>;
 	
 	
 		
@@ -132,6 +133,9 @@ class PlayState extends FlxState
 		_grpSignals = new FlxTypedGroup<Signal>();
 		add(_grpSignals);
 		
+		_grpFlameJets = new FlxTypedGroup<FlameJet>();
+		add(_grpFlameJets);
+		
 		add(_grpHUD);
 		Reg.currentPlayState = this;
 		
@@ -157,6 +161,17 @@ class PlayState extends FlxState
 		}
 		return false;
 		
+	}
+	
+	public function spawnJet(X:Float, Y:Float):Void
+	{
+		var j:FlameJet;
+		j = _grpFlameJets.recycle();
+		if (j == null)
+			j = new FlameJet();
+			
+		j.start(X, Y);
+		_grpFlameJets.add(j);
 	}
 	
 	public function addExplosion(X:Float, Y:Float, Hurts:Int = 0):Void
@@ -319,14 +334,16 @@ class PlayState extends FlxState
 	public function spawnEnemy(EnemyType:Int, X:Float, Y:Float):Void
 	{
 		var e:Enemy;
-		e = new Enemy();
+		e = _grpEnemies.recycle();
+		if (e == null)
+			e = new Enemy();
 		e.reset(X, Y);
 		_grpEnemies.add(e);
 		var _m:FlxPoint = e.getMidpoint();
 		addExplosion(_m.x, _m.y, HURTS_NONE);
 	}
 
-	public function startEnemySpawn():Void
+	public function startEnemySpawn(EnemyType:Int):Void
 	{
 		
 		var spawns:Array<FlxPoint> = enemySpawns.shuffleArray(10);
@@ -341,7 +358,7 @@ class PlayState extends FlxState
 				{
 					s = new Signal();
 				}
-				s.startSpawn(spawns[i], 0);
+				s.startSpawn(spawns[i], EnemyType);
 				_grpSignals.add(s);
 			}
 			
