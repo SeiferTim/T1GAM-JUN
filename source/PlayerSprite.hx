@@ -17,11 +17,12 @@ class PlayerSprite extends FlxSprite
 	// constant movement values
 	// these are 'based on' pixels per frame * framerate.
 	private static var MAX_X_SPEED:Float =   1.76 	* Reg.FRAMERATE;
-	private static var GRAVITY:Float = 		  .32 	* Reg.FRAMERATE;
-	private static var MAX_GRAV:Float = 	 7.00	* Reg.FRAMERATE;
+	private static var GRAVITY:Float = 		  .25 	* Reg.FRAMERATE;
+	private static var MAX_GRAV:Float = 	 6.00	* Reg.FRAMERATE;
 	private static var JUMP_POWER:Float = 	-4.192 	* Reg.FRAMERATE;
 	private static var JUMP_MIN:Float = 	-1.31 	* Reg.FRAMERATE;
-	private static var MIN_JUMP_TIME:Float =  .6;
+	private static var MIN_JUMP_TIME:Float =  1;
+	private static var MAX_JUMP_TIME:Float =  1.33;
 	private static var ACCELERATION:Float =   .4 	* Reg.FRAMERATE;
 	private static var DECELERATION:Float =   .8 	* Reg.FRAMERATE;
 	private static var BULLET_SPEED:Float =  5.00	* Reg.FRAMERATE;
@@ -57,6 +58,8 @@ class PlayerSprite extends FlxSprite
 		alive = false;
 		exists = true;
 		alpha = 0;
+		FlxG.debugger.track(this, "player");
+		FlxG.watch.add(this, "_jumpTimer");
 		
 	}
 	
@@ -84,7 +87,8 @@ class PlayerSprite extends FlxSprite
 					health = 1;
 					stopFlickering();
 					alive = true;
-					Reg.currentPlayState.addExplosion(x + (width / 2), y + height, PlayState.HURTS_ENEMYBULLET | PlayState.HURTS_ENEMY);
+					Reg.currentPlayState.addExplosion(x + (width / 2), y + height);
+					Reg.currentPlayState.fireBullet(x + (width / 2), y + (height / 2), 0, 0, playerNumber, Bullet.EXPLOSION);
 					
 				}
 				
@@ -198,7 +202,7 @@ class PlayerSprite extends FlxSprite
 				_jumpTimer = 0;
 			}
 			else
-				_landTimer -= FlxG.elapsed * 20;
+				_landTimer -= FlxG.elapsed * 10;
 			_ledgeBuffer = 1;
 			_didDoubleJump = false;
 			_doubleJumpReady = false;
@@ -216,8 +220,36 @@ class PlayerSprite extends FlxSprite
 		velocity.y += GRAVITY;
 		if (velocity.y > MAX_GRAV)
 			velocity.y = MAX_GRAV;
+			
+		if ((_jump || (_jumpTimer > 0 && _jumpTimer < MIN_JUMP_TIME) || (_jumpTimer > 0 && _didDoubleJump && _jumpTimer < MAX_JUMP_TIME)) && ((_jumpTimer < (_didDoubleJump ? MAX_JUMP_TIME : MAX_JUMP_TIME) && _jumpTimer >= 0) || (_jumpTimer < 0 && !_didDoubleJump && _doubleJumpReady)))
+		{
+			if (_jumpTimer < 0)
+			{
+				_didDoubleJump = true;
+				_jumpTimer = 0;
+			}
+			if (_didDoubleJump)
+			{
+				velocity.y = JUMP_POWER * .5;
+			}
+			else
+			{
+				velocity.y = JUMP_POWER;
+			}
+			
+			_jumpTimer += FlxG.elapsed * 6;
+		}
+		else if (!_jump && _jumpTimer > 0)
+		{
+			_jumpTimer = -1;
+			_doubleJumpReady = true;
+			if (velocity.y < JUMP_MIN)
+			{
+				velocity.y = 0;
+			}
+		}
 		
-		
+		/*
 		if (!_jump && !_didDoubleJump && _jumpTimer > MIN_JUMP_TIME)
 		{
 			_doubleJumpReady = true;
@@ -248,12 +280,11 @@ class PlayerSprite extends FlxSprite
 		else if (!_jump)
 		{
 			_jumpTimer = 5;
-			if (velocity.y < JUMP_MIN)
-			{
+			if (velocity.y < 0)
 				velocity.y = 0;
-			}
+			
 		}
-		
+		*/
 		/**/
 		
 	

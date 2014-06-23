@@ -53,7 +53,7 @@ class Boss extends FlxSpriteGroup
 		//_brain = new FSM(initialize);
 		
 		health = 0;
-		_maxHealth = 200 * Reg.playerCount;
+		_maxHealth = 200 + (200 * Reg.playerCount);
 		
 		_body = new BossSegment(0, 0);
 		_body.makeGraphic(60, 60, FlxColor.ORANGE);
@@ -318,15 +318,15 @@ class Boss extends FlxSpriteGroup
 		}
 	}
 	
-	public function phaseThree():Void
+	public function phaseFive():Void
 	{
 		// small imps
 		if (_actTimer > 1)
 		{
 			if (_shootTimer < 2 * healthRatio())
 			{
-				
-				Reg.currentPlayState.startEnemySpawn(0);
+				for (i in 0...Reg.playerCount)
+					Reg.currentPlayState.startEnemySpawn(0);
 				
 				_shootTimer++;
 				_actTimer = 0;
@@ -341,15 +341,15 @@ class Boss extends FlxSpriteGroup
 			_actTimer += FlxG.elapsed;
 		}
 	}
-	public function phaseSix():Void
+	public function phaseThree():Void
 	{
 		// flame jets
 		if (_actTimer > 1)
 		{
-			if (_shootTimer < 2 * healthRatio())
+			if (_shootTimer < 4 * healthRatio())
 			{
-				
-				Reg.currentPlayState.startEnemySpawn(1);
+				for (i in 0...Reg.playerCount)
+					Reg.currentPlayState.startEnemySpawn(1);
 				
 				_shootTimer++;
 				_actTimer = 0;
@@ -371,7 +371,8 @@ class Boss extends FlxSpriteGroup
 		_shootTimer = 0;
 		_fireAngle = -400;
 		_fireDir = 1;
-		_phase =  FlxRandom.int(2, 6, [_phase]);
+		
+		_phase =  FlxRandom.int(2, 3 + healthRatio(), [_phase]);
 		
 		//_phase = 
 	}
@@ -393,7 +394,7 @@ class Boss extends FlxSpriteGroup
 		
 	}
 	
-	public function phaseFour():Void
+	public function phaseSix():Void
 	{
 		// homing missles
 		if (_actTimer < healthRatio())
@@ -423,7 +424,7 @@ class Boss extends FlxSpriteGroup
 		}
 	}
 	
-	public function phaseFive():Void
+	public function phaseFour():Void
 	{
 		// flamethrower
 		if (_fireAngle == -400)

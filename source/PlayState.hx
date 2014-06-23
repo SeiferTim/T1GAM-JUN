@@ -22,11 +22,7 @@ using flixel.math.FlxRandom;
  */
 class PlayState extends FlxState
 {
-	public static inline var HURTS_NONE:Int = 0x000;
-	public static inline var HURTS_PLAYER:Int = 0x001;
-	public static inline var HURTS_ENEMY:Int = 0x010;
-	public static inline var HURTS_ANY:Int = 0x111;
-	public static inline var HURTS_ENEMYBULLET:Int = 0x100;
+	
 	
 	private var _players:Array<Bool>;
 	public var playerSprites:Array<PlayerSprite>;
@@ -148,14 +144,14 @@ class PlayState extends FlxState
 		#end
 	}
 	
-	public function fireBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, PlayerNo:Int):Bool
+	public function fireBullet(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, PlayerNo:Int, BulletType:Int = Bullet.PLAYER_BULLET):Bool
 	{
 		if (_grpPlayerBullets[PlayerNo].countLiving() < 6)
 		{
 			var b:Bullet = _grpPlayerBullets[PlayerNo].recycle();
 			if (b == null)
 				b = new Bullet();
-			b.fire(X, Y, VelocityX, VelocityY);
+			b.fire(X, Y, VelocityX, VelocityY, BulletType, null, BulletType == Bullet.PLAYER_BULLET ? Bullet.HURTS_OPPOSITE : Bullet.HURTS_ANY);
 			_grpPlayerBullets[PlayerNo].add(b);
 			return true;
 		}
@@ -174,12 +170,12 @@ class PlayState extends FlxState
 		_grpFlameJets.add(j);
 	}
 	
-	public function addExplosion(X:Float, Y:Float, Hurts:Int = 0):Void
+	public function addExplosion(X:Float, Y:Float):Void
 	{
 		var e:Explosion = _grpExplosions.recycle();
 		if (e == null)
 			e = new Explosion();
-		e.burst(X, Y, Hurts);
+		e.burst(X, Y);
 		_grpExplosions.add(e);
 	}
 	
@@ -189,9 +185,9 @@ class PlayState extends FlxState
 		if (b == null)
 			b = new Bullet();
 		if (PlayerTarget == -1)
-			b.fire(X, Y, VelocityX, VelocityY, BulletType);
+			b.fire(X, Y, VelocityX, VelocityY, BulletType,null, Bullet.HURTS_OPPOSITE);
 		else
-			b.fire(X, Y, VelocityX, VelocityY, BulletType, playerSprites[PlayerTarget]);
+			b.fire(X, Y, VelocityX, VelocityY, BulletType, playerSprites[PlayerTarget], Bullet.HURTS_OPPOSITE);
 		_grpEnemyBullets.add(b);
 	}
 	
@@ -219,10 +215,6 @@ class PlayState extends FlxState
 		FlxG.collide(_room.walls, _grpPlayers);
 		FlxG.collide(_room.walls, _grpEnemyBullets);
 		FlxG.collide(_room.walls, _grpEnemies);
-		FlxG.overlap(_boss, _grpExplosions, explosionHitsBoss);
-		FlxG.overlap(_grpEnemies, _grpExplosions, explosionHitsEnemy);
-		FlxG.overlap(_grpEnemyBullets, _grpExplosions, explosionHitEnemyBullet);
-		FlxG.overlap(_grpExplosions, _grpExplosions, explosionHitExplosion);
 		
 		for (i in 0...4)
 		{
@@ -231,70 +223,29 @@ class PlayState extends FlxState
 				FlxG.collide(_room.walls, _grpPlayerBullets[i]);
 				FlxG.overlap(_grpPlayerBullets[i], _boss, bulletHitBoss);
 				FlxG.overlap(_grpPlayerBullets[i], _grpEnemies, bulletHitEnemy);
+				FlxG.overlap(_grpPlayerBullets[i], _grpEnemyBullets, playerBulletHitsEnemyBullet);
 			}
 			if (_players[i])
 			{
 				FlxG.overlap(_grpEnemyBullets, playerSprites[i], enemyBulletHitPlayer);
 				FlxG.overlap(_grpEnemies, playerSprites[i], enemyHitPlayer);
-				FlxG.overlap(playerSprites[i], _grpExplosions, explosionHitsPlayer);
 			}
 		}
 		
 	}	
 	
-	private function explosionHitEnemyBullet(B:Bullet, E:ExplosionCloud):Void
+	private function playerBulletHitsEnemyBullet(PBullet:Bullet, EBullet:Bullet):Void
 	{
-		if (B.alive && B.exists && E.alive && E.exists && (E.parent.hurts & HURTS_ENEMYBULLET) != 0)
+		if (PBullet.alive && PBullet.exists && EBullet.alive && EBullet.exists && ((PBullet.hurts & Bullet.HURTS_BULLET) != 0 || (EBullet.hurts & Bullet.HURTS_BULLET) != 0))
 		{
-			B.kill();
-		}
-	}
-	
-	private function explosionHitExplosion(EA:ExplosionCloud, EB:ExplosionCloud):Void
-	{
-		if (EA.alive && EA.exists && EB.alive && EB.exists)
-		{
-			if ((EB.parent.hurts & HURTS_ENEMYBULLET) != 0 && (EA.parent.hurts & HURTS_PLAYER) != 0)
-			{
-				EA.kill();
-			}
-			else if ((EA.parent.hurts & HURTS_ENEMYBULLET) != 0 && (EB.parent.hurts & HURTS_PLAYER) != 0)
-			{
-				EB.kill();
-			}
-		}
-
-		
-	}
-	
-	private function explosionHitsBoss(B:BossSegment, E:ExplosionCloud):Void
-	{
-		if (B.alive && B.exists && _boss.vulnerable && E.alive && E.exists && (E.parent.hurts & HURTS_ENEMY) != 0)
-		{
-			B.hurt(1);
-		}
-	}
-	
-	private function explosionHitsEnemy(B:BossSegment, E:ExplosionCloud):Void
-	{
-		if (B.alive && B.exists && E.alive && E.exists && (E.parent.hurts & HURTS_ENEMY) != 0)
-		{
-			B.hurt(1);
-		}
-	}
-	
-	private function explosionHitsPlayer(P:PlayerSprite, E:ExplosionCloud):Void
-	{
-		if (P.alive && P.exists && E.alive && E.exists && (E.parent.hurts & HURTS_PLAYER) != 0)
-		{
-			P.hurt(1);
-			_playerStats[P.playerNumber].updateLives(Reg.players[P.playerNumber].lives);
+			PBullet.kill();
+			EBullet.kill();
 		}
 	}
 	
 	private function bulletHitEnemy(Bull:Bullet, E:BossSegment):Void
 	{
-		if (Bull.alive && Bull.exists && E.alive && E.exists)
+		if (Bull.alive && Bull.exists && E.alive && E.exists && (Bull.hurts & Bullet.HURTS_OPPOSITE) != 0)
 		{
 			Bull.kill();
 			E.hurt(1);
@@ -303,7 +254,7 @@ class PlayState extends FlxState
 	
 	private function enemyBulletHitPlayer(Bull:Bullet, Play:PlayerSprite):Void
 	{
-		if (Bull.alive && Bull.exists && Play.alive && Play.exists)
+		if (Bull.alive && Bull.exists && Play.alive && Play.exists && (Bull.hurts & Bullet.HURTS_OPPOSITE) != 0)
 		{
 			Bull.kill();
 			Play.hurt(1);
@@ -322,7 +273,7 @@ class PlayState extends FlxState
 	
 	private function bulletHitBoss(Bull:Bullet, Seg:BossSegment):Void
 	{
-		if (Bull.alive && Bull.exists && _boss.vulnerable)
+		if (Bull.alive && Bull.exists && _boss.vulnerable && (Bull.hurts & Bullet.HURTS_OPPOSITE) != 0)
 		{
 			Bull.kill();
 			//_boss.hurt(1 * Seg.damageMod);
@@ -340,7 +291,7 @@ class PlayState extends FlxState
 		e.reset(X, Y);
 		_grpEnemies.add(e);
 		var _m:FlxPoint = e.getMidpoint();
-		addExplosion(_m.x, _m.y, HURTS_NONE);
+		addExplosion(_m.x, _m.y);
 	}
 
 	public function startEnemySpawn(EnemyType:Int):Void

@@ -15,8 +15,6 @@ using flixel.math.FlxVelocity;
 class Explosion extends FlxSpriteGroup
 {
 
-	public var hurts:Int;
-	
 	public function new() 
 	{
 		super();
@@ -36,9 +34,9 @@ class Explosion extends FlxSpriteGroup
 		
 	}
 	
-	public function burst(X:Float, Y:Float, Hurts:Int):Void
+	public function burst(X:Float, Y:Float):Void
 	{
-		hurts = Hurts;
+		
 		reset(X, Y);
 		
 		var angle:Float = 0;
