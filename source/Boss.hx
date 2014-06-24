@@ -164,6 +164,8 @@ class Boss extends FlxSpriteGroup
 				phaseSix();
 			case 7:
 				phaseSeven();
+			case 8:
+				phaseEight();
 		}
 	}
 	
@@ -319,7 +321,58 @@ class Boss extends FlxSpriteGroup
 		}
 	}
 	
-	public function phaseSix():Void
+	public function phaseFive():Void
+	{
+		if (_shootTimer < 360 * .25)
+		{	
+			if (_actTimer > 1)
+			{
+			
+				if (_fireAngle == -400)
+					_fireAngle = FlxAngle.wrapAngle(20);
+				
+				var _start:FlxPoint = FlxAngle.getCartesianCoords(60, _fireAngle);
+				var _traj:FlxPoint = FlxAngle.getCartesianCoords(120, _fireAngle);
+				
+				Reg.currentPlayState.fireEnemyBullet(_body.x + 30 +_start.x, _body.y + 30 + _start.y, _traj.x, _traj.y, Bullet.ENEMY_BULLET);
+				
+				if (healthRatio() >= 2)
+				{
+					_start = FlxAngle.getCartesianCoords(60, FlxAngle.wrapAngle(_fireAngle)+180);
+					_traj = FlxAngle.getCartesianCoords(120, FlxAngle.wrapAngle(_fireAngle)+180);
+				
+					Reg.currentPlayState.fireEnemyBullet(_body.x + 30 +_start.x, _body.y + 30 + _start.y, _traj.x, _traj.y, Bullet.ENEMY_BULLET);
+				}
+				if (healthRatio() >= 3)
+				{
+					_start = FlxAngle.getCartesianCoords(60, FlxAngle.wrapAngle(_fireAngle) + 90);
+					_traj = FlxAngle.getCartesianCoords(120, FlxAngle.wrapAngle(_fireAngle) + 90);
+				
+					Reg.currentPlayState.fireEnemyBullet(_body.x + 30 +_start.x, _body.y + 30 + _start.y, _traj.x, _traj.y, Bullet.ENEMY_BULLET);
+					
+					_start = FlxAngle.getCartesianCoords(60, FlxAngle.wrapAngle(_fireAngle) + 270);
+					_traj = FlxAngle.getCartesianCoords(120, FlxAngle.wrapAngle(_fireAngle) + 270);
+				
+					Reg.currentPlayState.fireEnemyBullet(_body.x + 30 +_start.x, _body.y + 30 + _start.y, _traj.x, _traj.y, Bullet.ENEMY_BULLET);
+				}
+				
+				
+				_fireAngle-=4;
+				_fireAngle = FlxAngle.wrapAngle(_fireAngle);
+				
+				_actTimer = 0;
+				_shootTimer++;
+			}
+			else
+				_actTimer += FlxG.elapsed * 10;
+		}
+		else
+		{
+			switchPhase();
+		}
+	}
+	
+	public function phaseSeven():Void
 	{
 		// small imps
 		if (_actTimer > 1)
@@ -342,7 +395,7 @@ class Boss extends FlxSpriteGroup
 			_actTimer += FlxG.elapsed;
 		}
 	}
-	public function phaseThree():Void
+	public function phaseFour():Void
 	{
 		// flame jets
 		if (_shootTimer <= healthRatio() * Reg.playerCount * 2)
@@ -372,9 +425,7 @@ class Boss extends FlxSpriteGroup
 		_fireAngle = -400;
 		_fireDir = 1;
 		
-		_phase =  FlxRandom.int(2, 4 + healthRatio(), [_phase]);
-		
-		//_phase = 
+		_phase = FlxRandom.int(2,  8, [_phase]);
 	}
 	
 	private function healthRatio():Int
@@ -394,7 +445,7 @@ class Boss extends FlxSpriteGroup
 		
 	}
 	
-	public function phaseFive():Void
+	public function phaseThree():Void
 	{
 		//bouncing bombs
 		if (_actTimer < healthRatio())
@@ -423,7 +474,7 @@ class Boss extends FlxSpriteGroup
 		}
 	}
 	
-	public function phaseSeven():Void
+	public function phaseEight():Void
 	{
 		// homing missles
 		if (_actTimer < healthRatio())
@@ -453,7 +504,7 @@ class Boss extends FlxSpriteGroup
 		}
 	}
 	
-	public function phaseFour():Void
+	public function phaseSix():Void
 	{
 		// flamethrower
 		if (_fireAngle == -400)
