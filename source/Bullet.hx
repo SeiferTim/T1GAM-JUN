@@ -6,6 +6,7 @@ import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRandom;
 import flixel.util.FlxColor;
+import flixel.util.FlxColor;
 import openfl.geom.ColorTransform;
 using flixel.math.FlxVelocity;
 
@@ -23,6 +24,7 @@ class Bullet extends FlxSprite
 	public static inline var ENEMY_TRACKING:Int = 2;
 	public static inline var ENEMY_FIRE:Int = 3;
 	public static inline var EXPLOSION:Int = 4;
+	public static inline var ENEMY_BOMB:Int = 5;
 	
 	public var style:Int = PLAYER_BULLET;
 	private var _target:PlayerSprite;
@@ -36,6 +38,7 @@ class Bullet extends FlxSprite
 		style = Style;
 		drag.set();
 		alpha = 1;
+		allowCollisions = FlxObject.ANY;
 		switch (style) 
 		{
 			case PLAYER_BULLET:
@@ -46,15 +49,24 @@ class Bullet extends FlxSprite
 				
 			case ENEMY_TRACKING:
 				makeGraphic(12, 12, FlxColor.MAGENTA);
+				//allowCollisions = FlxObject.NONE;
 				
 			case ENEMY_FIRE:
 				var size:Int = FlxRandom.int(2, 10);
 				makeGraphic(size, size, FlxColor.ORANGE);
 				health = 60;
 				drag.set(20, 20);
+				
 			case EXPLOSION:
 				makeGraphic(50, 50, FlxColor.YELLOW);
 				health = .66;
+				//allowCollisions = FlxObject.NONE;
+				
+			case ENEMY_BOMB:
+				makeGraphic(8, 8, FlxColor.LIME);
+				health = 6;
+				elasticity = 1;
+				hurts = HURTS_NONE;
 				
 		}
 		_turnTimer = 0;
@@ -71,7 +83,7 @@ class Bullet extends FlxSprite
 			else
 				facing = FlxObject.RIGHT;
 				
-			allowCollisions = FlxObject.ANY;
+			
 		}
 		else
 		{
@@ -99,44 +111,50 @@ class Bullet extends FlxSprite
 			return;
 		
 		if (!isOnScreen() || isTouching(FlxObject.ANY))
-			kill();
-		
-		if (style == ENEMY_TRACKING)
 		{
+			if (style != ENEMY_BOMB && style != ENEMY_TRACKING && style != EXPLOSION)
+				kill();
+		}
+		
+		switch (style) 
+		{
+			case ENEMY_TRACKING:
+				if (!_target.alive || Math.abs(FlxMath.getDistance(_target.getMidpoint(), getMidpoint())) < 16 || health <= 0)
+				{
+					pop();
+				}
+				health--;
+				if (_turnTimer <=0)
+				{
+					moveTowardsObject(_target, 80);
+					_turnTimer = 1;
+				}
+				else
+					_turnTimer -= FlxG.elapsed * 6;
+			case ENEMY_FIRE:
+				health--;
+				if (health == 40)
+					drag.set(80, 80);
+				else if (health <= 0)
+					kill();
+				if (health < 10)
+				{
+					alpha = health * .1 * 2;
+				}
+			case EXPLOSION:
+				if (health <= 0)
+					kill();
+				else
+					health -= FlxG.elapsed;
+			case ENEMY_BOMB:
+				if (health <= 0)
+					pop();
+				else
+					health -= FlxG.elapsed;
 			
-			if (!_target.alive || Math.abs(FlxMath.getDistance(_target.getMidpoint(), getMidpoint())) < 16 || health <= 0)
-			{
-				pop();
-			}
-			health--;
-			if (_turnTimer <=0)
-			{
-				moveTowardsObject(_target, 80);
-				_turnTimer = 1;
-			}
-			else
-				_turnTimer -= FlxG.elapsed * 6;
+				
 		}
-		else if (style == ENEMY_FIRE)
-		{
-			health--;
-			if (health == 40)
-				drag.set(80, 80);
-			else if (health <= 0)
-				kill();
-			if (health < 10)
-			{
-				alpha = health * .1 * 2;
-			}
-		}
-		else if (style == EXPLOSION)
-		{
-			if (health <= 0)
-				kill();
-			else
-				health -= FlxG.elapsed;
-		}
-		
+			
 			
 		super.update();
 	}

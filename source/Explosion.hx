@@ -39,27 +39,32 @@ class Explosion extends FlxSpriteGroup
 		
 		reset(X, Y);
 		
-		var angle:Float = 0;
-		var speed:Float = 0;
-		var pivot:FlxPoint = FlxPoint.get();
-		var _ptZero:FlxPoint = FlxPoint.get();
+		//var angle:Float = 0;
+		//var speed:Float = 0;
+		//var pivot:FlxPoint = FlxPoint.get();
+		//var _ptZero:FlxPoint = FlxPoint.get();
+		
+		var _traj:FlxPoint = FlxPoint.get();
 		
 		for (i in 0...members.length)
 		{
 			members[i].revive();
 			members[i].visible = true;
 			members[i].alpha = 0;
-			members[i].x = X + FlxRandom.int( -10, 10) - (members[i].width / 2);
-			members[i].y = Y + FlxRandom.int( -10, 10) - (members[i].height / 2);
-			angle = FlxAngle.wrapAngle(FlxRandom.float(1, 360));
-			speed = FlxRandom.float(40, 100);
-			pivot.set(0, speed);
-			members[i].velocity.copyFrom(pivot.rotate(_ptZero, angle));
+			members[i].x = X + FlxRandom.int( -4, 4) - (members[i].width / 2);
+			members[i].y = Y + FlxRandom.int( -4, 4) - (members[i].height / 2);
+			//angle = FlxAngle.wrapAngle(FlxRandom.float(1, 360));
+			//speed = FlxRandom.float(40, 100);
+			//pivot.set(0, speed);
+			//members[i].velocity.copyFrom(pivot.rotate(_ptZero, angle));
+			
+			_traj = FlxAngle.getCartesianCoords(FlxRandom.float(40, 100), FlxAngle.wrapAngle(FlxRandom.float(1, 360)));
+			members[i].velocity.set(_traj.x, _traj.y);
+			
 			FlxTween.num(0, 1, .2, { ease:FlxEase.sineOut, complete: function(T) { FlxTween.num(1, 0, .66, { ease:FlxEase.backIn, complete:function(T) { members[i].kill(); } }, members[i].set_alpha); } }, members[i].set_alpha);
 		}
 		
-		pivot.put();
-		_ptZero.put();
+		_traj.put();
 		
 		members.shuffleArray(10);
 	}

@@ -5,6 +5,7 @@ import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxGroup;
+import flixel.math.FlxAngle;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRandom;
 import flixel.text.FlxText;
@@ -122,7 +123,7 @@ class PlayState extends FlxState
 		_grpExplosions = new FlxTypedGroup<Explosion>();
 		add(_grpExplosions);
 		
-		barBossHealth = new FlxBar(100, 5, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width - 200, 10, _boss, "health", 0, Reg.playerCount * 200, true);
+		barBossHealth = new FlxBar(100, 5, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width - 200, 10, _boss, "health", 0, _boss.maxHealth, true);
 		barBossHealth.alpha = 0;
 		_grpHUD.add(barBossHealth);
 		
@@ -215,6 +216,7 @@ class PlayState extends FlxState
 		FlxG.collide(_room.walls, _grpPlayers);
 		FlxG.collide(_room.walls, _grpEnemyBullets);
 		FlxG.collide(_room.walls, _grpEnemies);
+		FlxG.overlap(_grpPlayers, _grpPlayers, null, checkPlayerTouchesPlayer);
 		
 		for (i in 0...4)
 		{
@@ -233,6 +235,55 @@ class PlayState extends FlxState
 		}
 		
 	}	
+	
+	
+	
+	private function checkPlayerTouchesPlayer(P1:PlayerSprite, P2:PlayerSprite):Bool
+	{
+		
+		if (P1.alive && P1.exists && P2.alive && P2.exists)
+		{
+			
+			//
+			
+			/*P1.y = P1.last.y;
+			P2.y = P2.last.y;
+			P1.x = P1.last.x;
+			P2.x = P2.last.x;*/
+			
+			FlxObject.separate(P1, P2);
+			var dY:Float = (Math.abs(P1.velocity.y) + Math.abs(P2.velocity.y)) * .5 * .1;
+			if (dY < 200)
+				dY = 200;
+			if (P1.y < P2.y)
+			{
+				P1.velocity.y = -dY;
+				P2.velocity.y = dY;
+			}
+			else if (P1.y > P2.y)
+			{
+				P1.velocity.y = dY;
+				P2.velocity.y = -dY;
+			}
+			
+			var dX:Float = (Math.abs(P1.velocity.x) + Math.abs(P2.velocity.x))  * .5 * .1;
+			if (dX < 200)
+				dX= 200;
+			if (P1.x < P2.x)
+			{
+				P1.velocity.x = -dX;
+				P2.velocity.x = dX;
+			}
+			else if (P1.x > P2.x)
+			{
+				P1.velocity.x = dX;
+				P2.velocity.x = -dX;
+			}
+			
+			return true;
+		}
+		return false;
+	}
 	
 	private function playerBulletHitsEnemyBullet(PBullet:Bullet, EBullet:Bullet):Void
 	{
@@ -300,23 +351,23 @@ class PlayState extends FlxState
 		var spawns:Array<FlxPoint> = enemySpawns.shuffleArray(10);
 		var s:Signal;
 		
-		for (i in 0...Reg.playerCount)
-		{
-			if (playerSprites[i].alive)
-			{
+		//for (i in 0...Reg.playerCount)
+		//{
+			
+			//{
 				s = _grpSignals.recycle();
 				if (s == null)
 				{
 					s = new Signal();
 				}
-				s.startSpawn(spawns[i], EnemyType);
+				s.startSpawn(spawns[0], EnemyType);
 				_grpSignals.add(s);
-			}
+			//}
 			
 				//spawnEnemy(0, Reg.currentPlayState.enemySpawns[i].x, Reg.currentPlayState.enemySpawns[i].y);
 				
 			
-		}
+		//}
 	}
 	
 	public function startMusic():Void

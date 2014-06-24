@@ -92,6 +92,10 @@ class GameControls
 		keys[1][SELECT] = keys[1][JUMP].concat(keys[1][FIRE]).concat(keys[1][PAUSE]);
 		keys[1][ANY] = keys[1][LEFT].concat(keys[1][UP]).concat(keys[1][RIGHT]).concat(keys[1][DOWN]).concat(keys[1][JUMP]).concat(keys[1][FIRE]).concat(keys[1][PAUSE]);
 		
+		#if debug
+		keys[1] = keys[0].copy();
+		#end
+		
 		keys[2] = keys[1].copy();
 		keys[3] = keys[2].copy();
 		

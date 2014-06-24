@@ -39,7 +39,7 @@ class Boss extends FlxSpriteGroup
 	private var _phase:Int = 0;
 	//private var _phases:Array<Int>;
 	
-	private var _maxHealth:Int = 0;
+	public var maxHealth:Int = 0;
 	private var _fireAngle:Float = -400;
 	private var _fireDir:Int = 1;
 	
@@ -53,7 +53,7 @@ class Boss extends FlxSpriteGroup
 		//_brain = new FSM(initialize);
 		
 		health = 0;
-		_maxHealth = 200 + (200 * Reg.playerCount);
+		maxHealth = 200 + (200 * Reg.playerCount);
 		
 		_body = new BossSegment(0, 0);
 		_body.makeGraphic(60, 60, FlxColor.ORANGE);
@@ -162,7 +162,8 @@ class Boss extends FlxSpriteGroup
 				phaseFive();
 			case 6:
 				phaseSix();
-				
+			case 7:
+				phaseSeven();
 		}
 	}
 	
@@ -200,7 +201,7 @@ class Boss extends FlxSpriteGroup
 				{
 					_actTimer++;
 					
-					FlxTween.num(0, _maxHealth, 3, { ease:FlxEase.sineInOut, complete:finishHealthFill }, updateHealth);
+					FlxTween.num(0, maxHealth, 3, { ease:FlxEase.sineInOut, complete:finishHealthFill }, updateHealth);
 				}
 			}
 		}
@@ -318,7 +319,7 @@ class Boss extends FlxSpriteGroup
 		}
 	}
 	
-	public function phaseFive():Void
+	public function phaseSix():Void
 	{
 		// small imps
 		if (_actTimer > 1)
@@ -344,24 +345,23 @@ class Boss extends FlxSpriteGroup
 	public function phaseThree():Void
 	{
 		// flame jets
-		if (_actTimer > 1)
+		if (_shootTimer <= healthRatio() * Reg.playerCount * 2)
 		{
-			if (_shootTimer < 4 * healthRatio())
+			if (_actTimer > 1)
 			{
-				for (i in 0...Reg.playerCount)
-					Reg.currentPlayState.startEnemySpawn(1);
-				
+			
+				Reg.currentPlayState.startEnemySpawn(1);
 				_shootTimer++;
 				_actTimer = 0;
 			}
 			else
 			{
-				switchPhase();
+				_actTimer += FlxG.elapsed;
 			}
 		}
 		else
 		{
-			_actTimer += FlxG.elapsed;
+			switchPhase();
 		}
 	}
 	
@@ -372,7 +372,7 @@ class Boss extends FlxSpriteGroup
 		_fireAngle = -400;
 		_fireDir = 1;
 		
-		_phase =  FlxRandom.int(2, 3 + healthRatio(), [_phase]);
+		_phase =  FlxRandom.int(2, 4 + healthRatio(), [_phase]);
 		
 		//_phase = 
 	}
@@ -383,7 +383,7 @@ class Boss extends FlxSpriteGroup
 		//  .75 = 2;
 		//  .50 = 3;
 		//  .25 = 4;
-		var h:Float = health / _maxHealth;
+		var h:Float = health / maxHealth;
 		if (h < .25)
 			return 3;
 		else if (h < .5)
@@ -394,7 +394,36 @@ class Boss extends FlxSpriteGroup
 		
 	}
 	
-	public function phaseSix():Void
+	public function phaseFive():Void
+	{
+		//bouncing bombs
+		if (_actTimer < healthRatio())
+		{
+			if (_shootTimer > 1)
+			{
+				_actTimer++;
+				_shootTimer = 0;
+				var _ang = FlxRandom.int(1, 360);
+				var _pos:FlxPoint = FlxAngle.getCartesianCoords(10, _ang);
+				var _traj:FlxPoint = FlxAngle.getCartesianCoords(120, _ang);
+				
+				Reg.currentPlayState.fireEnemyBullet(_head.x  + 10 + _pos.x, _head.y + 10 + _pos.y, _traj.x, _traj.y, Bullet.ENEMY_BOMB);
+			}
+			else
+				_shootTimer += FlxG.elapsed * .33;
+		}
+		else
+		{
+			if (_shootTimer > 1)
+			{
+				switchPhase();
+			}
+			else
+				_shootTimer += FlxG.elapsed * .66;
+		}
+	}
+	
+	public function phaseSeven():Void
 	{
 		// homing missles
 		if (_actTimer < healthRatio())
