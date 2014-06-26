@@ -30,20 +30,22 @@ class Bullet extends FlxSprite
 	private var _target:PlayerSprite;
 	private var _turnTimer:Float = 0;
 	public var hurts:Int = HURTS_NONE;
+	public var owner:Int = -1;
 	
 	
-	public function fire(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, Style:Int = PLAYER_BULLET, ?Target:PlayerSprite, Hurts:Int=HURTS_NONE):Void
+	public function fire(X:Float, Y:Float, VelocityX:Float, VelocityY:Float, Style:Int = PLAYER_BULLET, ?Target:PlayerSprite, Hurts:Int=HURTS_NONE, ?Owner:Int = -1):Void
 	{
 		hurts = Hurts;
 		style = Style;
 		drag.set();
 		alpha = 1;
 		allowCollisions = FlxObject.ANY;
+		owner = -1;
 		switch (style) 
 		{
 			case PLAYER_BULLET:
 				loadGraphic(AssetPaths.bullet__png, false, 6, 4);
-				
+				owner = Owner;
 			case ENEMY_BULLET:
 				loadGraphic(AssetPaths.enemy_bullet__png, false, 10, 10);
 				

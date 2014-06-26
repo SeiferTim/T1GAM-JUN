@@ -41,7 +41,7 @@ class PlayState extends FlxState
 	private var _grpExplosions:FlxTypedGroup<Explosion>;
 	private var _grpSignals:FlxTypedGroup<Signal>;
 	private var _grpFlameJets:FlxTypedGroup<FlameJet>;
-	
+	private var _stopOverlaps:Bool = false;
 	
 		
 	public function new(Players:Array<Int>):Void
@@ -152,7 +152,7 @@ class PlayState extends FlxState
 			var b:Bullet = _grpPlayerBullets[PlayerNo].recycle();
 			if (b == null)
 				b = new Bullet();
-			b.fire(X, Y, VelocityX, VelocityY, BulletType, null, BulletType == Bullet.PLAYER_BULLET ? Bullet.HURTS_OPPOSITE : Bullet.HURTS_ANY);
+			b.fire(X, Y, VelocityX, VelocityY, BulletType, null, BulletType == Bullet.PLAYER_BULLET ? Bullet.HURTS_OPPOSITE : Bullet.HURTS_ANY,PlayerNo);
 			_grpPlayerBullets[PlayerNo].add(b);
 			return true;
 		}
@@ -223,14 +223,21 @@ class PlayState extends FlxState
 			if (_grpPlayerBullets[i] != null)
 			{
 				FlxG.collide(_room.walls, _grpPlayerBullets[i]);
-				FlxG.overlap(_grpPlayerBullets[i], _boss, bulletHitBoss);
-				FlxG.overlap(_grpPlayerBullets[i], _grpEnemies, bulletHitEnemy);
-				FlxG.overlap(_grpPlayerBullets[i], _grpEnemyBullets, playerBulletHitsEnemyBullet);
+				if (!_stopOverlaps)
+				{
+					FlxG.overlap(_grpPlayerBullets[i], _boss, bulletHitBoss);
+					FlxG.overlap(_grpPlayerBullets[i], _grpEnemies, bulletHitEnemy);
+					FlxG.overlap(_grpPlayerBullets[i], _grpEnemyBullets, playerBulletHitsEnemyBullet);
+				}
 			}
 			if (_players[i])
 			{
-				FlxG.overlap(_grpEnemyBullets, playerSprites[i], enemyBulletHitPlayer);
-				FlxG.overlap(_grpEnemies, playerSprites[i], enemyHitPlayer);
+				if (!_stopOverlaps)
+				{
+					FlxG.overlap(_grpEnemyBullets, playerSprites[i], enemyBulletHitPlayer);
+					FlxG.overlap(_grpEnemies, playerSprites[i], enemyHitPlayer);
+				}
+				
 			}
 		}
 		
@@ -300,6 +307,9 @@ class PlayState extends FlxState
 		{
 			Bull.kill();
 			E.hurt(1);
+			var owner:Int = Bull.owner;
+			Reg.players[owner].score += 100;
+			_playerStats[owner].updateScore(Reg.players[owner].score);
 		}
 	}
 	
@@ -326,6 +336,10 @@ class PlayState extends FlxState
 	{
 		if (Bull.alive && Bull.exists && _boss.vulnerable && (Bull.hurts & Bullet.HURTS_OPPOSITE) != 0)
 		{
+			var owner:Int = Bull.owner;
+			Reg.players[owner].score += 5;
+			_playerStats[owner].updateScore(Reg.players[owner].score);
+			
 			Bull.kill();
 			//_boss.hurt(1 * Seg.damageMod);
 			//Seg.flash();
@@ -368,6 +382,29 @@ class PlayState extends FlxState
 				
 			
 		//}
+	}
+	
+	public function triggerDeath():Void
+	{
+		_grpEnemies.kill();
+		_grpEnemyBullets.kill();
+		_grpFlameJets.kill();
+		_grpSignals.kill();
+		_stopOverlaps = true;
+	}
+	
+	public function triggerWin():Void
+	{
+		// show some kind of victory message...
+		for (i in 0...4)
+		{
+			if (_players[i])
+			{
+				
+				Reg.players[i].score += 10000;
+				_playerStats[i].updateScore(Reg.players[i].score);
+			}
+		}
 	}
 	
 	public function startMusic():Void

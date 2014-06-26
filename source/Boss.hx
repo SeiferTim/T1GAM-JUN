@@ -1,5 +1,6 @@
 package ;
 import flixel.FlxG;
+import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.input.android.FlxAndroidKeyList;
@@ -42,7 +43,7 @@ class Boss extends FlxSpriteGroup
 	public var maxHealth:Int = 0;
 	private var _fireAngle:Float = -400;
 	private var _fireDir:Int = 1;
-	
+	private var _flashTimer:FlxTimer;
 	
 	public function new() 
 	{
@@ -136,10 +137,17 @@ class Boss extends FlxSpriteGroup
 	override public function update():Void 
 	{
 		
+		if (health < 0 && _phase != 9)
+		{
+			switchPhase();
+			_phase = 9;
+		}
 		
 		updatePhase();
 		
 		updateHands();
+		
+		
 		
 		super.update();
 	}
@@ -166,6 +174,51 @@ class Boss extends FlxSpriteGroup
 				phaseSeven();
 			case 8:
 				phaseEight();
+			case 9:
+				dying();
+		}
+	}
+	
+	public function dying():Void
+	{
+		if (_actTimer > 1)
+		{
+			_actTimer = 0;
+			if (_shootTimer <= 0)
+			{
+				allowCollisions = FlxObject.NONE;
+				Reg.currentPlayState.triggerDeath();
+				FlxG.camera.shake(0.01, .2);
+				FlxG.camera.flash(FlxColor.WHITE, .2, function() { 
+					_flashTimer = new FlxTimer(.2, function(_) {
+						FlxG.camera.shake(0.01, .2);
+						FlxG.camera.flash(FlxColor.WHITE, .2, function() { 
+							_flashTimer = new FlxTimer(.66, function(_) { 
+								FlxG.camera.flash(FlxColor.WHITE, .1, function() { 
+									_shootTimer = 5;
+									FlxTween.num(1, 0, 6, { ease:FlxEase.quartOut }, set_alpha);
+									FlxG.camera.fade(FlxColor.WHITE, 5, true, function() { _shootTimer = 6; } ); 
+								} );
+							} );
+						} ); 
+					} );
+				} );
+				_shootTimer++;
+			}
+			else if (_shootTimer == 5)
+			{
+				FlxG.camera.shake(0.01 * alpha, .25); 
+			}
+			else if (_shootTimer == 6)
+			{
+				Reg.currentPlayState.triggerWin();
+				_shootTimer++;
+			}
+			
+		}
+		else
+		{
+			_actTimer += FlxG.elapsed * 4;
 		}
 	}
 	
@@ -323,6 +376,7 @@ class Boss extends FlxSpriteGroup
 	
 	public function phaseFive():Void
 	{
+		// bullet spiral
 		if (_shootTimer < 360 * .25)
 		{	
 			if (_actTimer > 1)
@@ -546,6 +600,12 @@ class Boss extends FlxSpriteGroup
 			switchPhase();
 		}
 
+	}
+	
+	override public function kill():Void 
+	{
+		
+		//super.kill();
 	}
 	
 	

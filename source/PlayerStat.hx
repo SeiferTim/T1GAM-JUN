@@ -3,6 +3,7 @@ package ;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
+import flixel.text.FlxText;
 import flixel.util.FlxColor;
 
 class PlayerStat extends FlxGroup
@@ -14,6 +15,7 @@ class PlayerStat extends FlxGroup
 	private var _x:Float;
 	private var _y:Float;
 	private var _width:Float;
+	private var _score:FlxText;
 	
 	// score?
 	
@@ -67,6 +69,19 @@ class PlayerStat extends FlxGroup
 			_lives.push(_live);
 			add(_live);
 		}
+		
+		_score = new FlxText(_x, _y + (_y > FlxG.height / 2 ? -12 : 12), _width, "000000", 8);
+		if (_x > FlxG.width / 2)
+		{
+			_score.x = _x + _width - _score.width;
+			_score.alignment = "right";
+		}
+		add(_score);
+	}
+	
+	public function updateScore(Value:Int):Void
+	{
+		_score.text = StringTools.lpad(Std.string(Value), "0", 6);
 	}
 	
 	public function updateLives(Value:Int):Void
