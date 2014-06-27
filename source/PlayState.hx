@@ -1,10 +1,14 @@
 package;
 
+import flixel.addons.ui.FlxUICursor;
+import flixel.addons.ui.FlxUIState;
+import flixel.addons.ui.MultiKey;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxGroup;
+import flixel.input.keyboard.FlxKey;
 import flixel.math.FlxAngle;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRandom;
@@ -48,11 +52,16 @@ class PlayState extends FlxState
 	private var _sprFadeOut:FlxSprite;
 	private var _txtGameEnd:FlxText;
 	private var _leaving:Bool = false;
+	private var _gameOver:Bool = false;
+	private var _btnPlayAgain:FlxButton;
+	private var _btnMenu:FlxButton;
 	
 	
 	public function new(Players:Array<Int>):Void
 	{
 		super();
+		
+		
 		
 		bgColor = 0xff333333;
 
@@ -70,12 +79,14 @@ class PlayState extends FlxState
 		
 	}
 	
+	
+	
+	
 	/**
 	 * Function that is called up when to state is created to set it up. 
 	 */
 	override public function create():Void
 	{
-		
 		
 		_room = new Room(Reg.level);
 		add(_room.bg);
@@ -160,6 +171,8 @@ class PlayState extends FlxState
 		FlxG.camera.fade(FlxColor.BLACK, .3, true, doneFadeIn);
 		
 		super.create();
+		
+
 		
 		#if !FLX_NO_MOUSE
 		FlxG.mouse.visible = false;
@@ -424,6 +437,7 @@ class PlayState extends FlxState
 	public function triggerWin():Void
 	{
 		// show some kind of victory message...
+		_gameOver = true;
 		for (i in 0...4)
 		{
 			if (_players[i])

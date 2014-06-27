@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<data>
+	
+	<button id="btn_playagain" label="Play Again" x="0" center_y="true">
+		<param type="string" value="button_play_again"/>
+	</button>
+	
+	<button if="btn_menu" label="Menu" x="0" center_y="true">
+		<param type="string" value="button_menu"/>
+	</button>
+	
+	<align axis="horizontal" spacing="2" resize="false">
+		<bounds left="100" right="400"/>
+		<objects value="btn_playagain,btn_menu" />
+	</align>
+	
+	<mode id="empty" is_default="true">
+		<hide id="button_play_again,button_menu" />
+	</mode>
+	
+	<mode id="gameover">
+		<show id="button_play_again,button_menu" />
+	</mode>
+	
+</data>
