@@ -54,7 +54,7 @@ class Boss extends FlxSpriteGroup
 		//_brain = new FSM(initialize);
 		
 		health = 0;
-		maxHealth = 200 + (200 * Reg.playerCount);
+		maxHealth = 1;// 200 + (200 * Reg.playerCount);
 		
 		_body = new BossSegment(0, 0);
 		_body.makeGraphic(60, 60, FlxColor.ORANGE);

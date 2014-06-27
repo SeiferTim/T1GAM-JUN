@@ -9,6 +9,8 @@ import flixel.math.FlxAngle;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRandom;
 import flixel.text.FlxText;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import flixel.ui.FlxBar;
 import flixel.ui.FlxButton;
 import flixel.math.FlxMath;
@@ -17,6 +19,7 @@ import flixel.util.FlxSignal;
 import haxe.EnumFlags;
 using flixel.util.FlxArrayUtil;
 using flixel.math.FlxRandom;
+using flixel.util.FlxSpriteUtil;
 
 /**
  * A FlxState which can be used for the actual gameplay.
@@ -42,8 +45,11 @@ class PlayState extends FlxState
 	private var _grpSignals:FlxTypedGroup<Signal>;
 	private var _grpFlameJets:FlxTypedGroup<FlameJet>;
 	private var _stopOverlaps:Bool = false;
+	private var _sprFadeOut:FlxSprite;
+	private var _txtGameEnd:FlxText;
+	private var _leaving:Bool = false;
 	
-		
+	
 	public function new(Players:Array<Int>):Void
 	{
 		super();
@@ -133,7 +139,22 @@ class PlayState extends FlxState
 		_grpFlameJets = new FlxTypedGroup<FlameJet>();
 		add(_grpFlameJets);
 		
+		
+		
+		_sprFadeOut = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		_sprFadeOut.alpha = 0;
+		_sprFadeOut.visible = false;
+		add(_sprFadeOut);
+		
+		_txtGameEnd = new FlxText(0, 0, FlxG.width, "", 22);
+		_txtGameEnd.alignment = "center";
+		_txtGameEnd.y = -30;
+		_txtGameEnd.alpha = 0;
+		_txtGameEnd.visible = false;
+		add(_txtGameEnd);
+		
 		add(_grpHUD);
+		
 		Reg.currentPlayState = this;
 		
 		FlxG.camera.fade(FlxColor.BLACK, .3, true, doneFadeIn);
@@ -211,7 +232,14 @@ class PlayState extends FlxState
 	 */
 	override public function update():Void
 	{	
+		
+		
 		super.update();
+		
+		if (_gameOver)
+		{
+			return;
+		}
 		
 		FlxG.collide(_room.walls, _grpPlayers);
 		FlxG.collide(_room.walls, _grpEnemyBullets);
@@ -405,6 +433,21 @@ class PlayState extends FlxState
 				_playerStats[i].updateScore(Reg.players[i].score);
 			}
 		}
+		_txtGameEnd.text = "VICTORY!";
+		_txtGameEnd.screenCenter(true, false);
+		_txtGameEnd.visible = true;
+		_sprFadeOut.visible = true;
+		FlxTween.num(0, 1, 2, { ease:FlxEase.quintOut }, gameEndIn);
+		
+	}
+	
+	private function gameEndIn(Value:Float):Void
+	{
+		_txtGameEnd.alpha = Value * 2;
+		_sprFadeOut.alpha = Value;
+		_txtGameEnd.y = -30 + (Value * ((FlxG.height / 2) - (_txtGameEnd.height / 2) + 30));
+		barBossHealth.alpha = (.5 - Value) * 2;
+		
 	}
 	
 	public function startMusic():Void
